@@ -1,0 +1,50 @@
+# Dependências
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Testes
+tests/
+*.test.js
+*.test.jsx
+*.spec.js
+*.spec.jsx
+coverage/
+.nyc_output/
+
+# Arquivos de ambiente local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Arquivos de IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git/
+.gitignore
+
+# Documentação de desenvolvimento
+*.md
+!README.md
+
+# Arquivos temporários
+*.tmp
+*.temp
+.cache/
+
+# Arquivos de build local
+dist/
+build/
+
+# Logs
+logs/
+*.log

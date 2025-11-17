@@ -1,0 +1,13 @@
+# robots.txt para Mar Quente HUB
+
+User-agent: *
+Disallow: /api/
+Disallow: /admin/
+Disallow: /login
+Disallow: /register
+
+# Allow public pages
+Allow: /
+
+# Sitemap
+Sitemap: https://seudominio.com/sitemap.xml

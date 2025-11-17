@@ -1,0 +1,93 @@
+═══════════════════════════════════════════════════════════════
+  INSTRUÇÕES PARA RODAR O PROJETO - MAR QUENTE HUB
+═══════════════════════════════════════════════════════════════
+
+⚠️ PROBLEMA ATUAL:
+O projeto não está rodando no Git Bash devido a um bug conhecido do npm
+com pacotes do Rollup no Windows.
+
+✅ SOLUÇÃO RÁPIDA (escolha uma):
+
+═══════════════════════════════════════════════════════════════
+OPÇÃO 1: PowerShell (MAIS FÁCIL E RECOMENDADA)
+═══════════════════════════════════════════════════════════════
+
+1. Feche o Git Bash
+
+2. Abra o PowerShell:
+   - Pressione as teclas: Win + X
+   - Clique em "Windows PowerShell" ou "Terminal"
+
+3. Execute:
+   cd "C:\Users\patri\Desktop\Roberto\mar-quente-hub-518b064c_(2)"
+
+4. Execute:
+   .\fix-and-run.ps1
+
+   (Se der erro de permissão, execute antes:)
+   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+
+5. Aguarde a instalação terminar e o servidor iniciar
+
+6. Acesse no navegador: http://localhost:5173
+
+═══════════════════════════════════════════════════════════════
+OPÇÃO 2: CMD (Prompt de Comando)
+═══════════════════════════════════════════════════════════════
+
+1. Pressione: Win + R
+
+2. Digite: cmd (e pressione Enter)
+
+3. Execute:
+   cd /d C:\Users\patri\Desktop\Roberto\mar-quente-hub-518b064c_(2)
+
+4. Execute:
+   fix-and-run.bat
+
+5. Aguarde e acesse: http://localhost:5173
+
+═══════════════════════════════════════════════════════════════
+O QUE FOI FEITO:
+═══════════════════════════════════════════════════════════════
+
+✅ Todos os dados foram substituídos por dados mockados
+✅ Criado cliente mock completo que simula o SDK @base44
+✅ Sistema funciona sem necessidade de API real
+✅ Scripts automáticos para corrigir o problema do Rollup
+
+═══════════════════════════════════════════════════════════════
+ARQUIVOS IMPORTANTES:
+═══════════════════════════════════════════════════════════════
+
+📁 src/api/mockData.js         - Todos os dados mockados
+📁 src/api/mockClient.js       - Cliente que simula o SDK
+📁 src/api/base44Client.js     - Configuração mock/real
+📄 fix-and-run.ps1             - Script PowerShell (RECOMENDADO)
+📄 fix-and-run.bat             - Script CMD
+📄 COMO_RODAR.md               - Guia detalhado
+📄 DADOS_MOCKADOS.md           - Documentação dos dados
+
+═══════════════════════════════════════════════════════════════
+DADOS MOCKADOS DISPONÍVEIS:
+═══════════════════════════════════════════════════════════════
+
+👥 5 Usuários (você está logado como Ana Silva - Admin)
+🏢 4 Departamentos (Marketing, Comercial, Desenvolvimento, Manutenção)
+📊 3 Projetos
+✅ 5 Tarefas
+👗 3 Coleções de Moda
+📅 3 Eventos no Calendário
+🎫 3 Tickets
+📱 2 Posts de UGC
+🎯 2 Campanhas
+🎟️ 2 Cupons
+E muito mais!
+
+═══════════════════════════════════════════════════════════════
+PRECISA DE AJUDA?
+═══════════════════════════════════════════════════════════════
+
+Leia o arquivo: COMO_RODAR.md (mais detalhes e soluções alternativas)
+
+═══════════════════════════════════════════════════════════════

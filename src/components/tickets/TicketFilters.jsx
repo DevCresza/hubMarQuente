@@ -45,11 +45,10 @@ export default function TicketFilters({ filters, setFilters, departments, ticket
             className="w-full px-4 py-2 bg-gray-100 shadow-neumorphic-inset border-none rounded-xl text-gray-700 font-medium text-sm"
           >
             <option value="all">Todos Status</option>
-            <option value="aberto">Aberto</option>
-            <option value="em_atendimento">Em Atendimento</option>
-            <option value="aguardando_resposta">Aguardando</option>
-            <option value="resolvido">Resolvido</option>
-            <option value="fechado">Fechado</option>
+            <option value="open">Aberto</option>
+            <option value="in_progress">Em Atendimento</option>
+            <option value="resolved">Resolvido</option>
+            <option value="closed">Fechado</option>
           </select>
         </div>
 
@@ -60,10 +59,10 @@ export default function TicketFilters({ filters, setFilters, departments, ticket
             className="w-full px-4 py-2 bg-gray-100 shadow-neumorphic-inset border-none rounded-xl text-gray-700 font-medium text-sm"
           >
             <option value="all">Todas Prioridades</option>
-            <option value="baixa">Baixa</option>
-            <option value="media">Média</option>
-            <option value="alta">Alta</option>
-            <option value="urgente">Urgente</option>
+            <option value="low">Baixa</option>
+            <option value="medium">Média</option>
+            <option value="high">Alta</option>
+            <option value="critical">Crítica</option>
           </select>
         </div>
 
@@ -87,12 +86,10 @@ export default function TicketFilters({ filters, setFilters, departments, ticket
             className="w-full px-4 py-2 bg-gray-100 shadow-neumorphic-inset border-none rounded-xl text-gray-700 font-medium text-sm"
           >
             <option value="all">Todos Tipos</option>
-            <option value="solicitacao">Solicitação</option>
-            <option value="problema">Problema</option>
-            <option value="suporte_tecnico">Suporte Técnico</option>
-            <option value="melhoria">Melhoria</option>
-            <option value="duvida">Dúvida</option>
-            <option value="manutencao">Manutenção</option>
+            <option value="request">Solicitação</option>
+            <option value="task">Tarefa</option>
+            <option value="bug">Problema/Bug</option>
+            <option value="question">Pergunta</option>
           </select>
         </div>
       </div>

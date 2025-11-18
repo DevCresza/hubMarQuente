@@ -12,20 +12,22 @@ import {
 export default function ProjectCard({ project, owner, teamMembers, department, tasks = [], currentUser, onView, onEdit }) {
   const getStatusColor = (status) => {
     const colors = {
-      ativo: "bg-green-100 text-green-700",
-      em_espera: "bg-yellow-100 text-yellow-700",
-      concluido: "bg-blue-100 text-blue-700",
-      arquivado: "bg-gray-100 text-gray-600"
+      planning: "bg-purple-100 text-purple-700",
+      in_progress: "bg-green-100 text-green-700",
+      on_hold: "bg-yellow-100 text-yellow-700",
+      completed: "bg-blue-100 text-blue-700",
+      cancelled: "bg-gray-100 text-gray-600"
     };
-    return colors[status] || colors.ativo;
+    return colors[status] || colors.planning;
   };
 
   const getStatusLabel = (status) => {
     const labels = {
-      ativo: "Ativo",
-      em_espera: "Em Espera",
-      concluido: "Concluído",
-      arquivado: "Arquivado"
+      planning: "Planejamento",
+      in_progress: "Em Progresso",
+      on_hold: "Em Espera",
+      completed: "Concluído",
+      cancelled: "Cancelado"
     };
     return labels[status] || status;
   };
@@ -36,7 +38,7 @@ export default function ProjectCard({ project, owner, teamMembers, department, t
     }
 
     const overdue = tasks.filter(t => {
-      if (!t.due_date || t.status === 'concluido') return false;
+      if (!t.due_date || t.status === 'done') return false;
       return new Date(t.due_date) < new Date();
     }).length;
 
@@ -58,7 +60,7 @@ export default function ProjectCard({ project, owner, teamMembers, department, t
       return taskDate > sevenDaysAgo;
     });
 
-    const stalled = !recentActivity && tasks.length > 0 && project.status === 'ativo';
+    const stalled = !recentActivity && tasks.length > 0 && project.status === 'in_progress';
 
     return { overdue, external, total: tasks.length, stalled, recentActivity };
   };

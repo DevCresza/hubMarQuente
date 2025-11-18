@@ -62,22 +62,40 @@ export default function TicketsPage() {
   };
 
   const handleSaveTicket = async (ticketData) => {
-    if (editingTicket) {
-      await base44.entities.Ticket.update(editingTicket.id, ticketData);
-    } else {
-      const ticketNumber = `TCK-${Date.now()}`;
-      await base44.entities.Ticket.create({
-        ...ticketData,
-        ticket_number: ticketNumber,
-        created_by: currentUser?.id
+    try {
+      // Campos permitidos na tabela tickets
+      const allowedFields = [
+        'title', 'description', 'type', 'priority', 'status',
+        'department', 'assigned_to', 'tags'
+      ];
+
+      // Filtrar apenas campos permitidos
+      const cleanTicketData = {};
+      Object.keys(ticketData).forEach(key => {
+        if (allowedFields.includes(key) && ticketData[key] !== undefined && ticketData[key] !== "") {
+          cleanTicketData[key] = ticketData[key];
+        }
       });
+
+      if (editingTicket) {
+        await base44.entities.Ticket.update(editingTicket.id, cleanTicketData);
+      } else {
+        // Adicionar created_by apenas na criação
+        cleanTicketData.created_by = currentUser?.id;
+        await base44.entities.Ticket.create(cleanTicketData);
+      }
+
+      setShowForm(false);
+      setEditingTicket(null);
+      loadData();
+    } catch (error) {
+      console.error("Erro ao salvar ticket:", error);
+      alert("Erro ao salvar ticket: " + (error.message || "Tente novamente"));
     }
-    setShowForm(false);
-    setEditingTicket(null);
-    loadData();
   };
 
   const handleEditTicket = (ticket) => {
+    setSelectedTicket(null); // Fechar a visualização de detalhes primeiro
     setEditingTicket(ticket);
     setShowForm(true);
   };
@@ -87,32 +105,45 @@ export default function TicketsPage() {
   };
 
   const handleStatusChange = async (ticketId, newStatus) => {
-    const updateData = { status: newStatus };
-    if (newStatus === "resolvido" || newStatus === "fechado") {
-      updateData.resolved_date = new Date().toISOString();
-      updateData.resolved_by = currentUser?.id;
+    try {
+      const updateData = { status: newStatus };
+      if (newStatus === "resolved" || newStatus === "closed") {
+        updateData.resolved_date = new Date().toISOString();
+      }
+
+      // Filtrar apenas campos permitidos
+      const allowedFields = ['status', 'resolved_date'];
+      const cleanUpdateData = {};
+      Object.keys(updateData).forEach(key => {
+        if (allowedFields.includes(key)) {
+          cleanUpdateData[key] = updateData[key];
+        }
+      });
+
+      await base44.entities.Ticket.update(ticketId, cleanUpdateData);
+      loadData();
+    } catch (error) {
+      console.error("Erro ao atualizar status:", error);
+      alert("Erro ao atualizar status do ticket");
     }
-    await base44.entities.Ticket.update(ticketId, updateData);
-    loadData();
   };
 
   const getFilteredTickets = () => {
     return tickets.filter(ticket => {
-      const searchMatch = 
+      const searchMatch =
         ticket.title?.toLowerCase().includes(filters.search.toLowerCase()) ||
-        ticket.ticket_number?.toLowerCase().includes(filters.search.toLowerCase()) ||
         ticket.description?.toLowerCase().includes(filters.search.toLowerCase());
 
       const statusMatch = filters.status === "all" || ticket.status === filters.status;
       const priorityMatch = filters.priority === "all" || ticket.priority === filters.priority;
-      const departmentMatch = filters.department === "all" || ticket.department_id === filters.department;
+      const departmentMatch = filters.department === "all" || ticket.department === filters.department;
       const typeMatch = filters.type === "all" || ticket.type === filters.type;
 
-      const viewMatch = 
+      const viewMatch =
         filters.view === "todos" ||
         (filters.view === "meus" && ticket.created_by === currentUser?.id) ||
         (filters.view === "atribuidos" && ticket.assigned_to === currentUser?.id) ||
-        (filters.view === "departamento" && ticket.department_id === currentUser?.department_id);
+        (filters.view === "departamento" && ticket.department === currentUser?.department_id);
 
       return searchMatch && statusMatch && priorityMatch && departmentMatch && typeMatch && viewMatch;
     });
@@ -181,7 +212,7 @@ export default function TicketsPage() {
             <TicketCard
               key={ticket.id}
               ticket={ticket}
-              department={departments.find(d => d.id === ticket.department_id)}
+              department={departments.find(d => d.id === ticket.department)}
               assignedUser={users.find(u => u.id === ticket.assigned_to)}
               currentUser={currentUser}
               onView={() => handleViewTicket(ticket)}

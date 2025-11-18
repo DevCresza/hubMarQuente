@@ -75,19 +75,19 @@ export default function ProjectTimeline({ tasks, milestones, project, users }) {
 
   const getStatusColor = (status) => {
     const colors = {
-      nao_iniciado: "#9ca3af",
-      em_progresso: "#3b82f6",
-      concluido: "#10b981",
-      cancelado: "#ef4444"
+      todo: "#9ca3af",
+      in_progress: "#3b82f6",
+      done: "#10b981",
+      blocked: "#ef4444"
     };
-    return colors[status] || colors.nao_iniciado;
+    return colors[status] || colors.todo;
   };
 
   const getStatusIcon = (status) => {
     switch(status) {
-      case 'concluido':
+      case 'done':
         return CheckCircle;
-      case 'em_progresso':
+      case 'in_progress':
         return Clock;
       default:
         return Circle;

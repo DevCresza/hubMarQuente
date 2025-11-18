@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { X, Calendar as CalendarIcon, Plus, Trash2, Edit, Target, Mic, LinkIcon, DollarSign } from "lucide-react";
@@ -33,20 +33,25 @@ export default function CollectionForm({ collection, stylists, styles, onSave, o
   const [formData, setFormData] = useState({
     name: collection?.name || "",
     description: collection?.description || "",
+    season: collection?.season || "",
+    year: collection?.year || new Date().getFullYear(),
     theme: collection?.theme || "",
     inspiration: collection?.inspiration || "",
     target_audience: collection?.target_audience || "",
-    
+    stylist: collection?.stylist || "",
+    color_palette: collection?.color_palette || [],
+    piece_count: collection?.piece_count || 0,
+
     launch_date: collection?.launch_date ? new Date(collection.launch_date) : null,
     production_start: collection?.production_start ? new Date(collection.production_start) : null,
     photoshoot_date: collection?.photoshoot_date ? new Date(collection.photoshoot_date) : null,
     campaign_start: collection?.campaign_start ? new Date(collection.campaign_start) : null,
-    
-    status: collection?.status || "conceito",
-    
+
+    status: collection?.status || "planning",
+
     budget: collection?.budget || 0,
     investments: collection?.investments || [],
-    
+
     drive_links: collection?.drive_links || {
       inspiration_board: "",
       raw_photos: "",
@@ -54,9 +59,47 @@ export default function CollectionForm({ collection, stylists, styles, onSave, o
       videos: "",
       marketing_materials: ""
     },
-    
+
     notes: collection?.notes || "",
   });
+
+  // Atualizar formData quando collection mudar
+  useEffect(() => {
+    if (collection) {
+      setFormData({
+        name: collection.name || "",
+        description: collection.description || "",
+        season: collection.season || "",
+        year: collection.year || new Date().getFullYear(),
+        theme: collection.theme || "",
+        inspiration: collection.inspiration || "",
+        target_audience: collection.target_audience || "",
+        stylist: collection.stylist || "",
+        color_palette: collection.color_palette || [],
+        piece_count: collection.piece_count || 0,
+
+        launch_date: collection.launch_date ? new Date(collection.launch_date) : null,
+        production_start: collection.production_start ? new Date(collection.production_start) : null,
+        photoshoot_date: collection.photoshoot_date ? new Date(collection.photoshoot_date) : null,
+        campaign_start: collection.campaign_start ? new Date(collection.campaign_start) : null,
+
+        status: collection.status || "planning",
+
+        budget: collection.budget || 0,
+        investments: collection.investments || [],
+
+        drive_links: collection.drive_links || {
+          inspiration_board: "",
+          raw_photos: "",
+          edited_photos: "",
+          videos: "",
+          marketing_materials: ""
+        },
+
+        notes: collection.notes || "",
+      });
+    }
+  }, [collection]);
 
   const [newInvestment, setNewInvestment] = useState({
     category: "producao",
@@ -79,7 +122,9 @@ export default function CollectionForm({ collection, stylists, styles, onSave, o
       production_start: toISODate(formData.production_start),
       photoshoot_date: toISODate(formData.photoshoot_date),
       campaign_start: toISODate(formData.campaign_start),
-      budget: Number(formData.budget),
+      year: Number(formData.year),
+      piece_count: Number(formData.piece_count) || 0,
+      budget: Number(formData.budget) || null,
       investments: formData.investments.map(inv => ({
         ...inv,
         amount: Number(inv.amount),
@@ -168,15 +213,16 @@ export default function CollectionForm({ collection, stylists, styles, onSave, o
                 <CustomTextarea label="Descrição / Conceito" value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} placeholder="Uma coleção inspirada na arquitetura e no ritmo da cidade." />
                 <div className="grid md:grid-cols-2 gap-4">
                   <CustomInput label="Tema" value={formData.theme} onChange={(e) => setFormData({...formData, theme: e.target.value})} placeholder="Conexões e contrastes" />
+                  <CustomInput label="Estação" value={formData.season} onChange={(e) => setFormData({...formData, season: e.target.value})} placeholder="Verão, Inverno..." />
+                </div>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <CustomInput type="number" label="Ano" value={formData.year} onChange={(e) => setFormData({...formData, year: e.target.value})} placeholder="2024" />
+                  <CustomInput type="number" label="Quantidade de Peças" value={formData.piece_count} onChange={(e) => setFormData({...formData, piece_count: e.target.value})} placeholder="0" />
                   <CustomSelect label="Status" value={formData.status} onChange={(e) => setFormData({...formData, status: e.target.value})}>
-                    <option value="conceito">Conceito</option>
-                    <option value="planejamento">Planejamento</option>
-                    <option value="desenvolvimento">Desenvolvimento</option>
-                    <option value="producao">Produção</option>
-                    <option value="fotografia">Fotografia</option>
-                    <option value="campanha">Campanha</option>
-                    <option value="lancado">Lançado</option>
-                    <option value="arquivado">Arquivado</option>
+                    <option value="planning">Planejamento</option>
+                    <option value="active">Ativo</option>
+                    <option value="completed">Concluído</option>
+                    <option value="archived">Arquivado</option>
                   </CustomSelect>
                 </div>
               </div>

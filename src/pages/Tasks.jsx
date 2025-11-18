@@ -107,9 +107,9 @@ export default function TasksPage() {
         status: newStatus
       };
 
-      if (newStatus === "concluido") {
+      if (newStatus === "done") {
         updatedTask.completed_date = new Date().toISOString().split('T')[0];
-      } else if (newStatus !== "concluido" && task.completed_date) {
+      } else if (newStatus !== "done" && task.completed_date) {
         updatedTask.completed_date = null;
       }
       
@@ -127,7 +127,7 @@ export default function TasksPage() {
       }
 
       // Mostrar celebração se foi concluída
-      if (newStatus === "concluido") {
+      if (newStatus === "done") {
         setCelebrationTask(task);
         setShowCelebration(true);
       }
@@ -230,9 +230,9 @@ export default function TasksPage() {
   };
 
   const statusGroups = [
-    { id: "nao_iniciado", label: "Não Iniciadas", color: "gray", bgColor: "bg-gray-100" },
-    { id: "em_progresso", label: "Em Progresso", color: "blue", bgColor: "bg-blue-50" },
-    { id: "concluido", label: "Concluídas", color: "green", bgColor: "bg-green-50" }
+    { id: "todo", label: "Não Iniciadas", color: "gray", bgColor: "bg-gray-100" },
+    { id: "in_progress", label: "Em Progresso", color: "blue", bgColor: "bg-blue-50" },
+    { id: "done", label: "Concluídas", color: "green", bgColor: "bg-green-50" }
   ];
 
   if (loading) {

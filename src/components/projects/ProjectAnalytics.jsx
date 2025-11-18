@@ -14,23 +14,17 @@ import {
 export default function ProjectAnalytics({ project, tasks, users }) {
   // Cálculos de métricas
   const totalTasks = tasks.length;
-  const completedTasks = tasks.filter(t => t.status === 'concluido').length;
-  const inProgressTasks = tasks.filter(t => t.status === 'em_progresso').length;
-  const notStartedTasks = tasks.filter(t => t.status === 'nao_iniciado').length;
-  
+  const completedTasks = tasks.filter(t => t.status === 'done').length;
+  const inProgressTasks = tasks.filter(t => t.status === 'in_progress').length;
+  const notStartedTasks = tasks.filter(t => t.status === 'todo').length;
+
   const overdueTasks = tasks.filter(t => {
-    if (!t.due_date || t.status === 'concluido') return false;
+    if (!t.due_date || t.status === 'done') return false;
     return new Date(t.due_date) < new Date();
   }).length;
 
-  const blockedTasks = tasks.filter(t => {
-    if (!t.dependencies || t.dependencies.length === 0) return false;
-    const depTasks = tasks.filter(dt => t.dependencies.includes(dt.id));
-    return depTasks.some(dt => dt.status !== 'concluido');
-  }).length;
-
-  const highPriorityTasks = tasks.filter(t => 
-    (t.priority === 'alta' || t.priority === 'urgente') && t.status !== 'concluido'
+  const highPriorityTasks = tasks.filter(t =>
+    (t.priority === 'high' || t.priority === 'critical') && t.status !== 'done'
   ).length;
 
   const completionRate = totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0;
@@ -45,8 +39,8 @@ export default function ProjectAnalytics({ project, tasks, users }) {
   const tasksByMember = teamMembers.map(member => ({
     user: member,
     total: tasks.filter(t => t.assigned_to === member.id).length,
-    completed: tasks.filter(t => t.assigned_to === member.id && t.status === 'concluido').length,
-    inProgress: tasks.filter(t => t.assigned_to === member.id && t.status === 'em_progresso').length
+    completed: tasks.filter(t => t.assigned_to === member.id && t.status === 'done').length,
+    inProgress: tasks.filter(t => t.assigned_to === member.id && t.status === 'in_progress').length
   }));
 
   // Estimativa de conclusão
@@ -56,9 +50,8 @@ export default function ProjectAnalytics({ project, tasks, users }) {
 
   // Health Score do projeto
   const healthScore = Math.round(
-    (completionRate * 0.4) + 
-    ((100 - (overdueTasks / totalTasks) * 100) * 0.3) + 
-    ((100 - (blockedTasks / totalTasks) * 100) * 0.3)
+    (completionRate * 0.5) +
+    ((100 - (overdueTasks / totalTasks) * 100) * 0.5)
   );
 
   const getHealthColor = (score) => {
@@ -92,7 +85,7 @@ export default function ProjectAnalytics({ project, tasks, users }) {
           </div>
         </div>
         
-        <div className="grid grid-cols-3 gap-4 mt-4">
+        <div className="grid grid-cols-2 gap-4 mt-4">
           <div className="text-center">
             <div className="text-2xl font-bold text-gray-800">{completionRate}%</div>
             <div className="text-xs text-gray-600">Conclusão</div>
@@ -100,10 +93,6 @@ export default function ProjectAnalytics({ project, tasks, users }) {
           <div className="text-center">
             <div className="text-2xl font-bold text-gray-800">{overdueTasks}</div>
             <div className="text-xs text-gray-600">Atrasadas</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-gray-800">{blockedTasks}</div>
-            <div className="text-xs text-gray-600">Bloqueadas</div>
           </div>
         </div>
       </div>
@@ -145,10 +134,10 @@ export default function ProjectAnalytics({ project, tasks, users }) {
               <AlertTriangle className="w-6 h-6 text-orange-600" />
             </div>
           </div>
-          <div className="text-3xl font-bold text-gray-800 mb-1">{overdueTasks + blockedTasks}</div>
-          <div className="text-sm text-gray-600">Tarefas com Problema</div>
+          <div className="text-3xl font-bold text-gray-800 mb-1">{overdueTasks}</div>
+          <div className="text-sm text-gray-600">Tarefas Atrasadas</div>
           <div className="text-xs text-gray-500 mt-1">
-            {overdueTasks} atrasadas • {blockedTasks} bloqueadas
+            Requerem atenção imediata
           </div>
         </div>
 
@@ -245,13 +234,13 @@ export default function ProjectAnalytics({ project, tasks, users }) {
       </div>
 
       {/* Alertas e Riscos */}
-      {(overdueTasks > 0 || blockedTasks > 0 || highPriorityTasks > 0) && (
+      {(overdueTasks > 0 || highPriorityTasks > 0) && (
         <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-6">
           <div className="flex items-center gap-3 mb-4">
             <AlertTriangle className="w-6 h-6 text-red-600" />
             <h3 className="text-xl font-semibold text-red-800">Alertas e Riscos</h3>
           </div>
-          
+
           <div className="space-y-3">
             {overdueTasks > 0 && (
               <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-red-200">
@@ -262,17 +251,7 @@ export default function ProjectAnalytics({ project, tasks, users }) {
                 <span className="text-xl font-bold text-red-600">{overdueTasks}</span>
               </div>
             )}
-            
-            {blockedTasks > 0 && (
-              <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-orange-200">
-                <div className="flex items-center gap-2">
-                  <AlertTriangle className="w-5 h-5 text-orange-600" />
-                  <span className="font-semibold text-gray-800">Tarefas Bloqueadas</span>
-                </div>
-                <span className="text-xl font-bold text-orange-600">{blockedTasks}</span>
-              </div>
-            )}
-            
+
             {highPriorityTasks > 0 && (
               <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-yellow-200">
                 <div className="flex items-center gap-2">

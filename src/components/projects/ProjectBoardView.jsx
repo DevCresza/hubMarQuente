@@ -9,7 +9,14 @@ import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 export default function ProjectBoardView({ sections, tasks = [], users, allTasks = [], currentUser, projectId, onAddTask, onUpdateTask, onDeleteTask, onViewTask }) {
   const getTasksBySection = (sectionId) => {
     if (!Array.isArray(tasks)) return [];
-    return tasks.filter(t => t.section_id === sectionId).sort((a, b) => (a.order || 0) - (b.order || 0));
+    // Mapear seções para status (seções são apenas visuais)
+    const statusMap = {
+      "section-1": "todo",
+      "section-2": "in_progress",
+      "section-3": "done"
+    };
+    const status = statusMap[sectionId];
+    return status ? tasks.filter(t => t.status === status) : [];
   };
 
   const handleDragEnd = (result) => {
@@ -26,29 +33,17 @@ export default function ProjectBoardView({ sections, tasks = [], users, allTasks
 
     if (!task) return;
 
-    const updates = {
-      section_id: newSectionId,
-      order: destination.index
+    // Mapear seção para status (seções são apenas visuais)
+    const statusMap = {
+      "section-1": "todo",
+      "section-2": "in_progress",
+      "section-3": "done"
     };
 
-    const targetSection = sections.find(s => s.id === newSectionId);
-    if (targetSection) {
-      if (targetSection.name.toLowerCase().includes('andamento') || targetSection.name.toLowerCase().includes('progresso')) {
-        if (task.status === 'nao_iniciado') {
-          updates.status = 'em_progresso';
-        }
-      } else if (targetSection.name.toLowerCase().includes('conclu') || targetSection.name.toLowerCase().includes('done')) {
-        if (task.status !== 'concluido') {
-          updates.status = 'concluido';
-        }
-      } else if (targetSection.name.toLowerCase().includes('fazer') || targetSection.order === 0) {
-        if (task.status === 'em_progresso') {
-          updates.status = 'nao_iniciado';
-        }
-      }
+    const newStatus = statusMap[newSectionId];
+    if (newStatus && newStatus !== task.status) {
+      onUpdateTask(taskId, { status: newStatus });
     }
-
-    onUpdateTask(taskId, updates);
   };
 
   return (

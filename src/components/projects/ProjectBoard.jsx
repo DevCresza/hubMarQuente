@@ -3,9 +3,9 @@ import { Circle, Clock, CheckCircle, Edit } from "lucide-react";
 
 export default function ProjectBoard({ tasks, users, onStatusChange, onEditTask }) {
   const columns = [
-    { id: "nao_iniciado", title: "Não Iniciado", icon: Circle, color: "text-gray-400" },
-    { id: "em_progresso", title: "Em Progresso", icon: Clock, color: "text-blue-500" },
-    { id: "concluido", title: "Concluído", icon: CheckCircle, color: "text-green-500" }
+    { id: "todo", title: "Não Iniciado", icon: Circle, color: "text-gray-400" },
+    { id: "in_progress", title: "Em Progresso", icon: Clock, color: "text-blue-500" },
+    { id: "done", title: "Concluído", icon: CheckCircle, color: "text-green-500" }
   ];
 
   const getTasksByStatus = (status) => {
@@ -14,12 +14,12 @@ export default function ProjectBoard({ tasks, users, onStatusChange, onEditTask 
 
   const getPriorityColor = (priority) => {
     const colors = {
-      baixa: "bg-blue-100 text-blue-700",
-      media: "bg-yellow-100 text-yellow-700",
-      alta: "bg-orange-100 text-orange-700",
-      urgente: "bg-red-100 text-red-700"
+      low: "bg-blue-100 text-blue-700",
+      medium: "bg-yellow-100 text-yellow-700",
+      high: "bg-orange-100 text-orange-700",
+      critical: "bg-red-100 text-red-700"
     };
-    return colors[priority] || colors.media;
+    return colors[priority] || colors.medium;
   };
 
   return (

@@ -69,7 +69,7 @@ export default function AssetDetails({ asset, collections, brands, users, curren
               <TypeIcon className="w-8 h-8 text-white" />
             </div>
             <div className="flex-1">
-              <h1 className="text-3xl font-semibold text-gray-800 mb-2">{asset.title}</h1>
+              <h1 className="text-3xl font-semibold text-gray-800 mb-2">{asset.name}</h1>
               <div className="flex gap-2 flex-wrap">
                 <span className={`px-3 py-1 rounded-lg text-xs font-semibold ${getStatusColor(asset.status)}`}>
                   {asset.status}
@@ -96,9 +96,9 @@ export default function AssetDetails({ asset, collections, brands, users, curren
                     poster={asset.thumbnail_url}
                   />
                 ) : (
-                  <img 
-                    src={asset.thumbnail_url || asset.file_url} 
-                    alt={asset.title}
+                  <img
+                    src={asset.thumbnail_url || asset.file_url}
+                    alt={asset.name}
                     className="w-full rounded-xl shadow-neumorphic-soft"
                   />
                 )}

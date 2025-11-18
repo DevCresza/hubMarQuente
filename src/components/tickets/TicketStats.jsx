@@ -3,9 +3,9 @@ import { AlertCircle, Clock, CheckCircle, XCircle } from "lucide-react";
 
 export default function TicketStats({ tickets, currentUser }) {
   const totalTickets = tickets.length;
-  const openTickets = tickets.filter(t => ['aberto', 'em_atendimento', 'aguardando_resposta'].includes(t.status)).length;
-  const resolvedTickets = tickets.filter(t => t.status === 'resolvido').length;
-  const urgentTickets = tickets.filter(t => t.priority === 'urgente' && !['resolvido', 'fechado'].includes(t.status)).length;
+  const openTickets = tickets.filter(t => ['open', 'in_progress'].includes(t.status)).length;
+  const resolvedTickets = tickets.filter(t => t.status === 'resolved').length;
+  const urgentTickets = tickets.filter(t => t.priority === 'critical' && !['resolved', 'closed'].includes(t.status)).length;
 
   const stats = [
     {

@@ -82,17 +82,28 @@ export default function Departments() {
 
   const handleSaveDepartment = async (departmentData) => {
     try {
+      // Campos permitidos na tabela departments
+      const allowedFields = ['name', 'description', 'color', 'icon', 'manager_id'];
+
+      // Filtrar apenas campos permitidos
+      const cleanDepartmentData = {};
+      Object.keys(departmentData).forEach(key => {
+        if (allowedFields.includes(key) && departmentData[key] !== undefined) {
+          cleanDepartmentData[key] = departmentData[key];
+        }
+      });
+
       if (editingDepartment) {
-        await base44.entities.Department.update(editingDepartment.id, departmentData);
+        await base44.entities.Department.update(editingDepartment.id, cleanDepartmentData);
       } else {
-        await base44.entities.Department.create(departmentData);
+        await base44.entities.Department.create(cleanDepartmentData);
       }
       setShowForm(false);
       setEditingDepartment(null);
       loadData();
     } catch (error) {
       console.error("Erro ao salvar departamento:", error);
-      alert("Erro ao salvar departamento. Tente novamente.");
+      alert("Erro ao salvar departamento: " + (error.message || "Tente novamente."));
     }
   };
 

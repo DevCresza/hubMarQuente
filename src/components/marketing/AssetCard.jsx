@@ -1,8 +1,8 @@
 import React from "react";
-import { Image, Video, Eye, Edit, Download, ExternalLink, CheckCircle, Circle } from "lucide-react";
+import { Image, Video, Eye, Edit, Download, ExternalLink, CheckCircle, Circle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export default function AssetCard({ asset, collection, brand, viewMode, isSelected, onSelect, onView, onEdit }) {
+export default function AssetCard({ asset, collection, brand, viewMode, isSelected, onSelect, onView, onEdit, onDelete }) {
   const getTypeIcon = (type) => {
     switch(type) {
       case 'video':
@@ -59,14 +59,14 @@ export default function AssetCard({ asset, collection, brand, viewMode, isSelect
 
           <div className="w-20 h-20 rounded-xl bg-gray-200 flex items-center justify-center shadow-neumorphic-inset flex-shrink-0 overflow-hidden">
             {asset.cover_url ? (
-              <img src={asset.cover_url} alt={asset.title} className="w-full h-full object-cover" />
+              <img src={asset.cover_url} alt={asset.name} className="w-full h-full object-cover" />
             ) : (
               <TypeIcon className="w-8 h-8 text-gray-400" />
             )}
           </div>
 
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-800 mb-1 truncate">{asset.title}</h3>
+            <h3 className="font-semibold text-gray-800 mb-1 truncate">{asset.name}</h3>
             {asset.description && (
               <p className="text-sm text-gray-600 line-clamp-1">{asset.description}</p>
             )}
@@ -102,6 +102,17 @@ export default function AssetCard({ asset, collection, brand, viewMode, isSelect
             >
               <Edit className="w-4 h-4 text-gray-600" />
             </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+              className="shadow-neumorphic-soft hover:shadow-neumorphic-pressed transition-all duration-200 bg-gray-100 hover:bg-red-50"
+            >
+              <Trash2 className="w-4 h-4 text-red-600" />
+            </Button>
           </div>
         </div>
       </div>
@@ -130,9 +141,9 @@ export default function AssetCard({ asset, collection, brand, viewMode, isSelect
         onClick={onView}
       >
         {asset.cover_url ? (
-          <img 
-            src={asset.cover_url} 
-            alt={asset.title} 
+          <img
+            src={asset.cover_url}
+            alt={asset.name}
             className="w-full h-full object-cover"
           />
         ) : (
@@ -151,7 +162,7 @@ export default function AssetCard({ asset, collection, brand, viewMode, isSelect
       </div>
 
       <div className="p-4">
-        <h3 className="font-semibold text-gray-800 mb-1 truncate">{asset.title}</h3>
+        <h3 className="font-semibold text-gray-800 mb-1 truncate">{asset.name}</h3>
         {asset.description && (
           <p className="text-sm text-gray-600 line-clamp-2 mb-3">{asset.description}</p>
         )}
@@ -202,6 +213,17 @@ export default function AssetCard({ asset, collection, brand, viewMode, isSelect
               <ExternalLink className="w-3 h-3" />
             </Button>
           )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            className="shadow-neumorphic-soft hover:shadow-neumorphic-pressed transition-all duration-200 bg-gray-100 hover:bg-red-50"
+          >
+            <Trash2 className="w-3 h-3 text-red-600" />
+          </Button>
         </div>
       </div>
     </div>

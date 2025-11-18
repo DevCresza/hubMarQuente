@@ -72,21 +72,42 @@ export default function LaunchCalendarPage() {
   };
 
   const handleSaveEvent = async (eventData) => {
-    if (editingEvent) {
-      await LaunchCalendarEntity.update(editingEvent.id, eventData);
-    } else {
-      await LaunchCalendarEntity.create(eventData);
+    try {
+      // Campos permitidos na tabela launch_calendar
+      const allowedFields = [
+        'title', 'description', 'type', 'start_date', 'end_date',
+        'collection', 'department', 'attendees', 'location', 'status'
+      ];
+
+      // Filtrar apenas campos permitidos
+      const cleanEventData = {};
+      Object.keys(eventData).forEach(key => {
+        if (allowedFields.includes(key) && eventData[key] !== undefined) {
+          cleanEventData[key] = eventData[key];
+        }
+      });
+
+      if (editingEvent) {
+        await LaunchCalendarEntity.update(editingEvent.id, cleanEventData);
+      } else {
+        await LaunchCalendarEntity.create(cleanEventData);
+      }
+
+      setShowForm(false);
+      setEditingEvent(null);
+      setInitialDate(null);
+      loadData();
+    } catch (error) {
+      console.error("Erro ao salvar evento:", error);
+      alert("Erro ao salvar evento: " + (error.message || "Tente novamente"));
     }
-    setShowForm(false);
-    setEditingEvent(null);
-    setInitialDate(null); // Clear initial date after save
-    loadData();
   };
 
   const handleEditEvent = (event) => {
+    setSelectedEvent(null); // Fechar visualização antes de editar
     setEditingEvent(event);
     setShowForm(true);
-    setInitialDate(null); // Clear initial date if editing an existing event
+    setInitialDate(null);
   };
 
   const handleViewEvent = (event) => {

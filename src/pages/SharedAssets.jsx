@@ -439,9 +439,9 @@ export default function SharedAssetsPage() {
                   onClick={() => setSelectedAsset(asset)}
                 >
                   {asset.cover_url ? (
-                    <img 
-                      src={asset.cover_url} 
-                      alt={asset.title} 
+                    <img
+                      src={asset.cover_url}
+                      alt={asset.name}
                       className="w-full h-full object-cover"
                     />
                   ) : (
@@ -457,7 +457,7 @@ export default function SharedAssetsPage() {
                       {asset.type}
                     </span>
                   </div>
-                  
+
                   {/* Badge de quantidade de links */}
                   {linksCount > 0 && (
                     <div className="absolute bottom-3 right-3">
@@ -470,7 +470,7 @@ export default function SharedAssetsPage() {
                 </div>
 
                 <div className="p-4">
-                  <h3 className="font-semibold text-gray-800 mb-2 truncate">{asset.title}</h3>
+                  <h3 className="font-semibold text-gray-800 mb-2 truncate">{asset.name}</h3>
                   
                   {asset.description && (
                     <p className="text-sm text-gray-600 line-clamp-2 mb-3">{asset.description}</p>

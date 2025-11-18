@@ -1,26 +1,52 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { X, AlertCircle, Upload } from "lucide-react";
+import { X, AlertCircle } from "lucide-react";
 
 export default function TicketForm({ ticket, users, departments, currentUser, onSave, onCancel }) {
   const marketingDept = departments.find(d => d.name === "Marketing");
-  
+
   const [formData, setFormData] = useState({
     title: ticket?.title || "",
     description: ticket?.description || "",
-    type: ticket?.type || "solicitacao_geral",
-    priority: "media", // Sempre média por padrão
-    department_id: ticket?.department_id || marketingDept?.id || "",
+    type: ticket?.type || "request",
+    priority: ticket?.priority || "medium",
+    status: ticket?.status || "open",
+    department: ticket?.department || marketingDept?.id || "",
     assigned_to: ticket?.assigned_to || "",
-    due_date: ticket?.due_date || "",
-    attachments: ticket?.attachments || []
+    tags: ticket?.tags || []
   });
 
-  const [uploading, setUploading] = useState(false);
+  // Atualizar formData quando ticket mudar (para modo de edição)
+  useEffect(() => {
+    if (ticket) {
+      setFormData({
+        title: ticket.title || "",
+        description: ticket.description || "",
+        type: ticket.type || "request",
+        priority: ticket.priority || "medium",
+        status: ticket.status || "open",
+        department: ticket.department || marketingDept?.id || "",
+        assigned_to: ticket.assigned_to || "",
+        tags: ticket.tags || []
+      });
+    } else {
+      // Reset para novo ticket
+      setFormData({
+        title: "",
+        description: "",
+        type: "request",
+        priority: "medium",
+        status: "open",
+        department: marketingDept?.id || "",
+        assigned_to: "",
+        tags: []
+      });
+    }
+  }, [ticket, marketingDept?.id]);
 
   const handleSubmit = (e) => {
     if (e && e.preventDefault) {
@@ -29,33 +55,8 @@ export default function TicketForm({ ticket, users, departments, currentUser, on
     onSave(formData);
   };
 
-  const handleFileUpload = async (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length === 0) return;
-
-    setUploading(true);
-    try {
-      const uploadPromises = files.map(file => base44.integrations.Core.UploadFile({ file }));
-      const results = await Promise.all(uploadPromises);
-      const fileUrls = results.map(r => r.file_url);
-      setFormData({ ...formData, attachments: [...formData.attachments, ...fileUrls] });
-    } catch (error) {
-      console.error("Erro ao fazer upload:", error);
-      alert("Erro ao fazer upload dos arquivos");
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const handleRemoveAttachment = (index) => {
-    setFormData({
-      ...formData,
-      attachments: formData.attachments.filter((_, i) => i !== index)
-    });
-  };
-
-  const departmentUsers = users.filter(u => 
-    u.department_id === formData.department_id && u.is_active
+  const departmentUsers = users.filter(u =>
+    u.department_id === formData.department && u.is_active
   );
 
   return (
@@ -107,13 +108,10 @@ export default function TicketForm({ ticket, users, departments, currentUser, on
                 className="w-full px-4 py-3 bg-gray-100 shadow-neumorphic-inset border-none rounded-xl text-gray-700 font-medium"
                 required
               >
-                <option value="criacao_conteudo">Criação de Conteúdo</option>
-                <option value="revisao_material">Revisão de Material</option>
-                <option value="design">Design</option>
-                <option value="campanha">Campanha</option>
-                <option value="social_media">Social Media</option>
-                <option value="solicitacao_geral">Solicitação Geral</option>
-                <option value="urgente">Urgente</option>
+                <option value="request">Solicitação</option>
+                <option value="task">Tarefa</option>
+                <option value="bug">Problema/Bug</option>
+                <option value="question">Pergunta</option>
               </select>
             </div>
 
@@ -132,45 +130,18 @@ export default function TicketForm({ ticket, users, departments, currentUser, on
             </div>
 
             <div>
-              <Label className="text-gray-700 mb-2 block font-semibold">Data do Prazo</Label>
-              <Input
-                type="date"
-                value={formData.due_date}
-                onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-                className="bg-gray-100 shadow-neumorphic-inset border-none text-gray-800"
-              />
-            </div>
-
-            <div>
-              <Label className="text-gray-700 mb-2 block font-semibold">Anexos</Label>
-              <div className="flex items-center gap-2">
-                <Input
-                  type="file"
-                  onChange={handleFileUpload}
-                  multiple
-                  className="bg-gray-100 shadow-neumorphic-inset border-none text-gray-800"
-                  disabled={uploading}
-                />
-                {uploading && (
-                  <span className="text-sm text-gray-500">Enviando...</span>
-                )}
-              </div>
-              {formData.attachments.length > 0 && (
-                <div className="mt-2 space-y-2">
-                  {formData.attachments.map((url, index) => (
-                    <div key={index} className="flex items-center justify-between p-2 bg-gray-100 rounded-lg shadow-neumorphic-inset">
-                      <span className="text-sm text-gray-600 truncate flex-1">Anexo {index + 1}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveAttachment(index)}
-                        className="text-red-500 hover:text-red-700 ml-2"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <Label className="text-gray-700 mb-2 block font-semibold">Prioridade *</Label>
+              <select
+                value={formData.priority}
+                onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                className="w-full px-4 py-3 bg-gray-100 shadow-neumorphic-inset border-none rounded-xl text-gray-700 font-medium"
+                required
+              >
+                <option value="low">Baixa</option>
+                <option value="medium">Média</option>
+                <option value="high">Alta</option>
+                <option value="critical">Crítica</option>
+              </select>
             </div>
           </form>
         </div>

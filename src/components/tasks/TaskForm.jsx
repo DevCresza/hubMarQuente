@@ -10,22 +10,28 @@ export default function TaskForm({ task, users, departments, collections, curren
   const [formData, setFormData] = useState({
     title: task?.title || "",
     description: task?.description || "",
+    status: task?.status || "todo",
     assigned_to: task?.assigned_to || currentUser?.id || "",
-    priority: task?.priority || "media",
-    start_date: task?.start_date || "",
+    priority: task?.priority || "medium",
     due_date: task?.due_date || "",
     estimated_hours: task?.estimated_hours || "",
-    tags: task?.tags || [],
-    dependencies: task?.dependencies || [],
-    is_external: task?.is_external || false,
-    external_contact: task?.external_contact || ""
+    tags: task?.tags || []
   });
 
   const [tagInput, setTagInput] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(formData);
+
+    // Limpar campos vazios (converter "" para null)
+    const cleanedData = {
+      ...formData,
+      due_date: formData.due_date || null,
+      estimated_hours: formData.estimated_hours || null,
+      description: formData.description || null
+    };
+
+    onSave(cleanedData);
   };
 
   const handleAddTag = () => {
@@ -39,17 +45,7 @@ export default function TaskForm({ task, users, departments, collections, curren
     setFormData({ ...formData, tags: formData.tags.filter(tag => tag !== tagToRemove) });
   };
 
-  const handleToggleDependency = (taskId) => {
-    const isSelected = formData.dependencies.includes(taskId);
-    if (isSelected) {
-      setFormData({ ...formData, dependencies: formData.dependencies.filter(id => id !== taskId) });
-    } else {
-      setFormData({ ...formData, dependencies: [...formData.dependencies, taskId] });
-    }
-  };
-
   const activeUsers = users.filter(u => u.is_active);
-  const availableTasks = allTasks.filter(t => t.id !== task?.id);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -121,10 +117,10 @@ export default function TaskForm({ task, users, departments, collections, curren
                       onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
                       className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-gray-700"
                     >
-                      <option value="baixa">Baixa</option>
-                      <option value="media">Média</option>
-                      <option value="alta">Alta</option>
-                      <option value="urgente">Urgente</option>
+                      <option value="low">Baixa</option>
+                      <option value="medium">Média</option>
+                      <option value="high">Alta</option>
+                      <option value="critical">Urgente</option>
                     </select>
                   </div>
                 </div>
@@ -139,26 +135,14 @@ export default function TaskForm({ task, users, departments, collections, curren
               </div>
               
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-sm text-gray-700 mb-2 block font-semibold">Data de Início</Label>
-                    <Input
-                      type="date"
-                      value={formData.start_date}
-                      onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                      className="bg-gray-50 border-gray-200"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-sm text-gray-700 mb-2 block font-semibold">Data de Término</Label>
-                    <Input
-                      type="date"
-                      value={formData.due_date}
-                      onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-                      className="bg-gray-50 border-gray-200"
-                    />
-                  </div>
+                <div>
+                  <Label className="text-sm text-gray-700 mb-2 block font-semibold">Data de Vencimento</Label>
+                  <Input
+                    type="date"
+                    value={formData.due_date}
+                    onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
+                    className="bg-gray-50 border-gray-200"
+                  />
                 </div>
 
                 <div>
@@ -175,67 +159,6 @@ export default function TaskForm({ task, users, departments, collections, curren
                 </div>
               </div>
             </div>
-
-            {/* Terceirizado */}
-            <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200">
-              <div className="flex items-center gap-3 mb-4">
-                <input
-                  type="checkbox"
-                  checked={formData.is_external}
-                  onChange={(e) => setFormData({ ...formData, is_external: e.target.checked })}
-                  className="w-4 h-4 rounded text-purple-600"
-                />
-                <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Tarefa Executada por Terceiros</h3>
-              </div>
-              
-              {formData.is_external && (
-                <div>
-                  <Label className="text-sm text-gray-700 mb-2 block font-semibold">Empresa / Nome / Email Contato</Label>
-                  <Textarea
-                    value={formData.external_contact}
-                    onChange={(e) => setFormData({ ...formData, external_contact: e.target.value })}
-                    placeholder="Digite as informações de contato do terceiro&#10;Ex: Empresa XYZ - João Silva - joao@empresa.com - (11) 99999-9999"
-                    className="bg-gray-50 border-gray-200 h-20"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Informe o nome da empresa, pessoa de contato e meios de comunicação
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* Dependências */}
-            {availableTasks.length > 0 && (
-              <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200">
-                <div className="flex items-center gap-2 mb-4">
-                  <Link2 className="w-4 h-4 text-orange-600" />
-                  <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Dependências</h3>
-                  {formData.dependencies.length > 0 && (
-                    <span className="text-xs text-gray-500">({formData.dependencies.length} selecionadas)</span>
-                  )}
-                </div>
-                
-                <div className="max-h-48 overflow-y-auto bg-gray-50 rounded-xl p-3 border border-gray-200">
-                  {availableTasks.map(t => (
-                    <label 
-                      key={t.id}
-                      className="flex items-center gap-3 p-2 cursor-pointer hover:bg-white rounded-lg transition-colors"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={formData.dependencies.includes(t.id)}
-                        onChange={() => handleToggleDependency(t.id)}
-                        className="w-4 h-4 rounded text-orange-600"
-                      />
-                      <span className="text-sm text-gray-700 flex-1">{t.title}</span>
-                    </label>
-                  ))}
-                </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  Esta tarefa só pode ser iniciada após a conclusão das tarefas selecionadas
-                </p>
-              </div>
-            )}
 
             {/* Tags */}
             <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200">

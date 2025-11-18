@@ -3,10 +3,10 @@ import { base44 } from "@/api/base44Client";
 import { supabase } from "@/api/supabaseClient";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { 
-  CheckCircle, 
-  Clock, 
-  AlertCircle, 
+import {
+  CheckCircle,
+  Clock,
+  AlertCircle,
   FolderKanban,
   Calendar,
   ArrowRight,
@@ -14,6 +14,7 @@ import {
   TrendingUp
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import TaskDetailsModal from "@/components/projects/TaskDetailsModal";
 
 export default function Dashboard() {
   const [tasks, setTasks] = useState([]);
@@ -21,6 +22,7 @@ export default function Dashboard() {
   const [users, setUsers] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedTask, setSelectedTask] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -62,7 +64,7 @@ export default function Dashboard() {
   const getStats = () => {
     const myTasks = tasks.filter(t => t.assigned_to === currentUser?.id);
     const myProjects = projects.filter(p =>
-      p.owner === currentUser?.id || p.team_members?.includes(currentUser?.id)
+      p.owner_id === currentUser?.id || p.team_members?.includes(currentUser?.id)
     );
     const completedTasks = myTasks.filter(t => t.status === 'done');
     const urgentTasks = myTasks.filter(t => (t.priority === 'critical' || t.priority === 'high') && t.status !== 'done');
@@ -75,7 +77,7 @@ export default function Dashboard() {
       myTasks: myTasks.length,
       myTasksInProgress: myTasks.filter(t => t.status === 'in_progress').length,
       myProjects: myProjects.length,
-      activeProjects: projects.filter(p => p.status === 'in_progress' || p.status === 'active').length,
+      activeProjects: projects.filter(p => p.status === 'planning' || p.status === 'in_progress').length,
       completedTasks: completedTasks.length,
       taskCompletionRate: myTasks.length ? Math.round((completedTasks.length / myTasks.length) * 100) : 0,
       urgentTasks: urgentTasks.length,
@@ -93,7 +95,10 @@ export default function Dashboard() {
 
   const getActiveProjects = () => {
     return projects
-      .filter(p => (p.status === 'in_progress' || p.status === 'active') && (p.owner === currentUser?.id || p.team_members?.includes(currentUser?.id)))
+      .filter(p =>
+        (p.status === 'planning' || p.status === 'in_progress') &&
+        (p.owner_id === currentUser?.id || p.team_members?.includes(currentUser?.id))
+      )
       .slice(0, 4);
   };
 
@@ -105,6 +110,41 @@ export default function Dashboard() {
         t.assigned_to === currentUser?.id
       )
       .slice(0, 3);
+  };
+
+  const handleUpdateTask = async (taskId, updates) => {
+    try {
+      // Campos permitidos na tabela tasks
+      const allowedFields = [
+        'title', 'description', 'status', 'priority', 'assigned_to',
+        'department', 'project', 'due_date', 'completed_date',
+        'tags', 'estimated_hours', 'actual_hours'
+      ];
+
+      // Filtrar apenas campos permitidos
+      const cleanUpdates = {};
+      Object.keys(updates).forEach(key => {
+        if (allowedFields.includes(key) && updates[key] !== undefined) {
+          cleanUpdates[key] = updates[key];
+        }
+      });
+
+      await base44.entities.Task.update(taskId, cleanUpdates);
+      await loadData();
+      setSelectedTask(null);
+    } catch (error) {
+      console.error("Erro ao atualizar tarefa:", error);
+    }
+  };
+
+  const handleDeleteTask = async (taskId) => {
+    try {
+      await base44.entities.Task.delete(taskId);
+      await loadData();
+      setSelectedTask(null);
+    } catch (error) {
+      console.error("Erro ao deletar tarefa:", error);
+    }
   };
 
   if (loading) {
@@ -229,11 +269,12 @@ export default function Dashboard() {
                 getRecentTasks().map(task => {
                   const assignedUser = users.find(u => u.id === task.assigned_to);
                   const isOverdue = task.due_date && new Date(task.due_date) < new Date();
-                  const project = projects.find(p => p.id === task.project_id);
+                  const project = projects.find(p => p.id === task.project);
                   
                   return (
-                    <div 
+                    <div
                       key={task.id}
+                      onClick={() => setSelectedTask(task)}
                       className="bg-gray-100 rounded-2xl p-4 shadow-neumorphic-inset hover:shadow-neumorphic-pressed transition-all duration-200 cursor-pointer"
                     >
                       <div className="flex items-start justify-between gap-3">
@@ -299,9 +340,10 @@ export default function Dashboard() {
             <div className="space-y-3">
               {getUrgentTasks().length > 0 ? (
                 getUrgentTasks().map(task => (
-                  <div 
+                  <div
                     key={task.id}
-                    className="bg-gray-100 rounded-2xl p-4 shadow-neumorphic-inset border-l-4 border-orange-500"
+                    onClick={() => setSelectedTask(task)}
+                    className="bg-gray-100 rounded-2xl p-4 shadow-neumorphic-inset border-l-4 border-orange-500 cursor-pointer hover:shadow-neumorphic-pressed transition-all duration-200"
                   >
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <h3 className="font-semibold text-gray-800 text-sm line-clamp-2">{task.title}</h3>
@@ -415,6 +457,24 @@ export default function Dashboard() {
             )}
           </div>
         </div>
+
+        {/* Modal de Detalhes da Tarefa */}
+        {selectedTask && (
+          <TaskDetailsModal
+            task={selectedTask}
+            users={users}
+            allTasks={tasks}
+            sections={[
+              { id: "section-1", name: "A Fazer" },
+              { id: "section-2", name: "Em Andamento" },
+              { id: "section-3", name: "Concluído" }
+            ]}
+            onClose={() => setSelectedTask(null)}
+            onUpdate={(updates) => handleUpdateTask(selectedTask.id, updates)}
+            onDelete={() => handleDeleteTask(selectedTask.id)}
+            onView={() => {}}
+          />
+        )}
       </div>
     </div>
   );

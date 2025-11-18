@@ -21,7 +21,14 @@ export default function DepartmentForm({ department, users, onSave, onCancel }) 
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(formData);
+
+    // Converter string vazia em null para campos UUID
+    const dataToSave = {
+      ...formData,
+      manager_id: formData.manager_id || null
+    };
+
+    onSave(dataToSave);
   };
 
   return (

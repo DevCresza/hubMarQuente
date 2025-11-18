@@ -4,18 +4,18 @@ import { CheckCircle, Clock, Circle, Calendar, User } from "lucide-react";
 export default function ProjectList({ tasks, users, onStatusChange, onEditTask }) {
   const getPriorityColor = (priority) => {
     const colors = {
-      baixa: "bg-blue-100 text-blue-700",
-      media: "bg-yellow-100 text-yellow-700",
-      alta: "bg-orange-100 text-orange-700",
-      urgente: "bg-red-100 text-red-700"
+      low: "bg-blue-100 text-blue-700",
+      medium: "bg-yellow-100 text-yellow-700",
+      high: "bg-orange-100 text-orange-700",
+      critical: "bg-red-100 text-red-700"
     };
-    return colors[priority] || colors.media;
+    return colors[priority] || colors.medium;
   };
 
   const getStatusIcon = (status) => {
     switch(status) {
-      case 'concluido': return CheckCircle;
-      case 'em_progresso': return Clock;
+      case 'done': return CheckCircle;
+      case 'in_progress': return Clock;
       default: return Circle;
     }
   };
@@ -37,17 +37,17 @@ export default function ProjectList({ tasks, users, onStatusChange, onEditTask }
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    const nextStatus = 
-                      task.status === 'nao_iniciado' ? 'em_progresso' :
-                      task.status === 'em_progresso' ? 'concluido' : 'nao_iniciado';
+                    const nextStatus =
+                      task.status === 'todo' ? 'in_progress' :
+                      task.status === 'in_progress' ? 'done' : 'todo';
                     onStatusChange(task.id, nextStatus);
                   }}
                   className="mt-1"
                 >
-                  <StatusIcon 
+                  <StatusIcon
                     className={`w-5 h-5 ${
-                      task.status === 'concluido' ? 'text-green-500' :
-                      task.status === 'em_progresso' ? 'text-blue-500' : 'text-gray-400'
+                      task.status === 'done' ? 'text-green-500' :
+                      task.status === 'in_progress' ? 'text-blue-500' : 'text-gray-400'
                     }`}
                   />
                 </button>

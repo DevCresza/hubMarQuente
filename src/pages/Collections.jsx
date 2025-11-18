@@ -32,17 +32,39 @@ export default function CollectionsPage() {
   };
 
   const handleSaveCollection = async (collectionData) => {
-    if (editingCollection) {
-      await Collection.update(editingCollection.id, collectionData);
-    } else {
-      await Collection.create(collectionData);
-    }
-    setShowForm(false);
-    setEditingCollection(null);
-    loadData();
-    if(selectedCollection){
-      const updatedSelection = await Collection.get(selectedCollection.id);
-      setSelectedCollection(updatedSelection);
+    try {
+      // Campos permitidos na tabela collections
+      const allowedFields = [
+        'name', 'description', 'season', 'year', 'status',
+        'launch_date', 'stylist', 'color_palette', 'piece_count', 'target_audience',
+        'theme', 'inspiration', 'production_start', 'photoshoot_date', 'campaign_start',
+        'budget', 'investments', 'drive_links', 'notes'
+      ];
+
+      // Filtrar apenas campos permitidos
+      const cleanCollectionData = {};
+      Object.keys(collectionData).forEach(key => {
+        if (allowedFields.includes(key) && collectionData[key] !== undefined && collectionData[key] !== "") {
+          cleanCollectionData[key] = collectionData[key];
+        }
+      });
+
+      if (editingCollection) {
+        await Collection.update(editingCollection.id, cleanCollectionData);
+      } else {
+        await Collection.create(cleanCollectionData);
+      }
+
+      setShowForm(false);
+      setEditingCollection(null);
+      loadData();
+      if (selectedCollection) {
+        const updatedSelection = await Collection.get(selectedCollection.id);
+        setSelectedCollection(updatedSelection);
+      }
+    } catch (error) {
+      console.error("Erro ao salvar coleção:", error);
+      alert("Erro ao salvar coleção: " + (error.message || "Tente novamente"));
     }
   };
 

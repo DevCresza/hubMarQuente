@@ -1,6 +1,6 @@
 
 import React from "react";
-import { AlertCircle, Clock, CheckCircle, User, Calendar, MoreVertical, Eye, MessageSquare } from "lucide-react";
+import { AlertCircle, Clock, CheckCircle, User, Calendar, MoreVertical, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,68 +13,62 @@ import {
 export default function TicketCard({ ticket, department, assignedUser, currentUser, onView, onStatusChange }) {
   const getStatusColor = (status) => {
     const colors = {
-      aberto: "bg-blue-100 text-blue-700",
-      em_atendimento: "bg-yellow-100 text-yellow-700",
-      aguardando_resposta: "bg-orange-100 text-orange-700",
-      resolvido: "bg-green-100 text-green-700",
-      fechado: "bg-gray-100 text-gray-700",
-      cancelado: "bg-red-100 text-red-700"
+      open: "bg-blue-100 text-blue-700",
+      in_progress: "bg-yellow-100 text-yellow-700",
+      resolved: "bg-green-100 text-green-700",
+      closed: "bg-gray-100 text-gray-700"
     };
-    return colors[status] || colors.aberto;
+    return colors[status] || colors.open;
   };
 
   const getStatusLabel = (status) => {
     const labels = {
-      aberto: "Aberto",
-      em_atendimento: "Em Atendimento",
-      aguardando_resposta: "Aguardando Resposta",
-      resolvido: "Resolvido",
-      fechado: "Fechado",
-      cancelado: "Cancelado"
+      open: "Aberto",
+      in_progress: "Em Atendimento",
+      resolved: "Resolvido",
+      closed: "Fechado"
     };
     return labels[status] || status;
   };
 
   const getPriorityColor = (priority) => {
     const colors = {
-      baixa: "bg-blue-100 text-blue-700",
-      media: "bg-yellow-100 text-yellow-700",
-      alta: "bg-orange-100 text-orange-700",
-      urgente: "bg-red-100 text-red-700"
+      low: "bg-blue-100 text-blue-700",
+      medium: "bg-yellow-100 text-yellow-700",
+      high: "bg-orange-100 text-orange-700",
+      critical: "bg-red-100 text-red-700"
     };
-    return colors[priority] || colors.media;
+    return colors[priority] || colors.medium;
   };
 
   const getPriorityLabel = (priority) => {
     const labels = {
-      baixa: "Baixa",
-      media: "Média",
-      alta: "Alta",
-      urgente: "Urgente"
+      low: "Baixa",
+      medium: "Média",
+      high: "Alta",
+      critical: "Crítica"
     };
     return labels[priority] || priority;
   };
 
   const getTypeLabel = (type) => {
     const labels = {
-      suporte_tecnico: "Suporte Técnico",
-      solicitacao: "Solicitação",
-      problema: "Problema",
-      melhoria: "Melhoria",
-      duvida: "Dúvida",
-      manutencao: "Manutenção"
+      request: "Solicitação",
+      task: "Tarefa",
+      bug: "Problema/Bug",
+      question: "Pergunta"
     };
     return labels[type] || type;
   };
 
   const getStatusIcon = (status) => {
     switch(status) {
-      case 'aberto':
+      case 'open':
         return AlertCircle;
-      case 'em_atendimento':
+      case 'in_progress':
         return Clock;
-      case 'resolvido':
-      case 'fechado':
+      case 'resolved':
+      case 'closed':
         return CheckCircle;
       default:
         return AlertCircle;
@@ -89,22 +83,14 @@ export default function TicketCard({ ticket, department, assignedUser, currentUs
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-start gap-3 flex-1">
           <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-neumorphic-soft flex-shrink-0 ${
-            ticket.priority === 'urgente' ? 'bg-red-500' :
-            ticket.priority === 'alta' ? 'bg-orange-500' :
-            ticket.priority === 'media' ? 'bg-yellow-500' :
+            ticket.priority === 'critical' ? 'bg-red-500' :
+            ticket.priority === 'high' ? 'bg-orange-500' :
+            ticket.priority === 'medium' ? 'bg-yellow-500' :
             'bg-blue-500'
           }`}>
             <StatusIcon className="w-5 h-5 text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-semibold text-gray-500">{ticket.ticket_number}</span>
-              {ticket.sla_breach && (
-                <span className="px-2 py-0.5 rounded text-xs font-semibold bg-red-100 text-red-700">
-                  SLA Violado
-                </span>
-              )}
-            </div>
             <h3 className="font-semibold text-gray-800 mb-1 line-clamp-2">{ticket.title}</h3>
           </div>
         </div>
@@ -125,14 +111,14 @@ export default function TicketCard({ ticket, department, assignedUser, currentUs
               Ver Detalhes
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            {ticket.status !== 'resolvido' && (
-              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onStatusChange('em_atendimento'); }}>
+            {ticket.status !== 'resolved' && (
+              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onStatusChange('in_progress'); }}>
                 <Clock className="w-4 h-4 mr-2" />
                 Colocar em Atendimento
               </DropdownMenuItem>
             )}
-            {ticket.status !== 'resolvido' && ticket.status !== 'fechado' && (
-              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onStatusChange('resolvido'); }}>
+            {ticket.status !== 'resolved' && ticket.status !== 'closed' && (
+              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onStatusChange('resolved'); }}>
                 <CheckCircle className="w-4 h-4 mr-2" />
                 Marcar como Resolvido
               </DropdownMenuItem>
@@ -169,19 +155,10 @@ export default function TicketCard({ ticket, department, assignedUser, currentUs
           </span>
         </div>
         
-        {ticket.due_date && (
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Calendar className="w-4 h-4 flex-shrink-0" />
-            <span>Prazo: {new Date(ticket.due_date).toLocaleDateString('pt-BR')}</span>
-          </div>
-        )}
-
-        {ticket.comments && ticket.comments.length > 0 && (
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <MessageSquare className="w-4 h-4 flex-shrink-0" />
-            <span>{ticket.comments.length} comentário{ticket.comments.length !== 1 ? 's' : ''}</span>
-          </div>
-        )}
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          <Calendar className="w-4 h-4 flex-shrink-0" />
+          <span>Criado em: {new Date(ticket.created_date).toLocaleDateString('pt-BR')}</span>
+        </div>
       </div>
     </div>
   );

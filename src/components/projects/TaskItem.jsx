@@ -15,15 +15,15 @@ import {
 export default function TaskItem({ task, users, allTasks = [], sections = [], onUpdate, onDelete, onView }) {
   const [showSectionMenu, setShowSectionMenu] = useState(false);
   const assignedUser = users.find(u => u.id === task.assigned_to);
-  
-  const isOverdue = task.due_date && task.status !== 'concluido' && new Date(task.due_date) < new Date();
-  
+
+  const isOverdue = task.due_date && task.status !== 'done' && new Date(task.due_date) < new Date();
+
   // The 'isBlocked' calculation and its associated badge have been removed as per the outline.
 
   const statusOptions = [
-    { value: "nao_iniciado", label: "A Fazer", icon: Circle, color: "text-gray-500" },
-    { value: "em_progresso", label: "Em Andamento", icon: Clock, color: "text-blue-500" },
-    { value: "concluido", label: "Concluído", icon: CheckCircle2, color: "text-green-500" }
+    { value: "todo", label: "A Fazer", icon: Circle, color: "text-gray-500" },
+    { value: "in_progress", label: "Em Andamento", icon: Clock, color: "text-blue-500" },
+    { value: "done", label: "Concluído", icon: CheckCircle2, color: "text-green-500" }
   ];
 
   const currentStatus = statusOptions.find(s => s.value === task.status) || statusOptions[0];
@@ -96,21 +96,37 @@ export default function TaskItem({ task, users, allTasks = [], sections = [], on
                       Mover para:
                     </div>
                     {sections
-                      .filter(s => s.id !== task.section_id)
-                      .map(section => (
-                        <DropdownMenuItem 
-                          key={section.id}
-                          onClick={(e) => { 
-                            e.stopPropagation(); 
-                            onUpdate({ section_id: section.id });
-                            setShowSectionMenu(false);
-                          }}
-                          className="cursor-pointer"
-                        >
-                          <ArrowRight className="w-4 h-4 mr-2" />
-                          {section.name}
-                        </DropdownMenuItem>
-                      ))
+                      .filter(s => {
+                        // Mapear seção para status e filtrar a seção atual
+                        const statusMap = {
+                          "section-1": "todo",
+                          "section-2": "in_progress",
+                          "section-3": "done"
+                        };
+                        return statusMap[s.id] !== task.status;
+                      })
+                      .map(section => {
+                        // Mapear seção para status
+                        const statusMap = {
+                          "section-1": "todo",
+                          "section-2": "in_progress",
+                          "section-3": "done"
+                        };
+                        return (
+                          <DropdownMenuItem
+                            key={section.id}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onUpdate({ status: statusMap[section.id] });
+                              setShowSectionMenu(false);
+                            }}
+                            className="cursor-pointer"
+                          >
+                            <ArrowRight className="w-4 h-4 mr-2" />
+                            {section.name}
+                          </DropdownMenuItem>
+                        );
+                      })
                     }
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -168,11 +184,6 @@ export default function TaskItem({ task, users, allTasks = [], sections = [], on
                   <Clock className="w-3 h-3" />
                   <span>{task.estimated_hours}h</span>
                 </div>
-              )}
-              {task.dependencies && task.dependencies.length > 0 && (
-                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
-                  {task.dependencies.length} dependência{task.dependencies.length > 1 ? 's' : ''}
-                </Badge>
               )}
             </div>
           </div>

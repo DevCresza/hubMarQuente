@@ -3,9 +3,9 @@ import { FolderKanban, CheckCircle, Clock, AlertCircle } from "lucide-react";
 
 export default function ProjectStats({ projects, currentUser }) {
   const myProjects = projects.filter(p => p.owner_id === currentUser?.id);
-  const activeProjects = projects.filter(p => p.status === 'em_andamento');
-  const completedProjects = projects.filter(p => p.status === 'concluido');
-  const urgentProjects = projects.filter(p => p.priority === 'urgente');
+  const activeProjects = projects.filter(p => p.status === 'in_progress');
+  const completedProjects = projects.filter(p => p.status === 'completed');
+  const urgentProjects = projects.filter(p => p.priority === 'critical');
 
   const stats = [
     {

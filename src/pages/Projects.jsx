@@ -67,12 +67,7 @@ export default function ProjectsPage() {
       } else {
         await base44.entities.Project.create({
           ...projectData,
-          owner_id: currentUser?.id,
-          sections: [
-            { id: "section-1", name: "A fazer", order: 1, collapsed: false },
-            { id: "section-2", name: "Em andamento", order: 2, collapsed: false },
-            { id: "section-3", name: "Concluído", order: 3, collapsed: false }
-          ]
+          owner_id: currentUser?.id
         });
       }
       setShowForm(false);
@@ -110,7 +105,7 @@ export default function ProjectsPage() {
       // Novo filtro de problemas
       let issuesMatch = true;
       if (filters.issues !== "all") {
-        const projectTasks = tasks.filter(t => t.project_id === project.id);
+        const projectTasks = tasks.filter(t => t.project === project.id);
 
         if (filters.issues === "atrasadas") {
           const hasOverdue = projectTasks.some(t =>
@@ -136,7 +131,7 @@ export default function ProjectsPage() {
             return taskDate > sevenDaysAgo;
           });
           // A project is considered 'parado' if it's active, has tasks, and no task has been active in the last 7 days
-          issuesMatch = !recentActivity && projectTasks.length > 0 && project.status === 'ativo';
+          issuesMatch = !recentActivity && projectTasks.length > 0 && project.status === 'in_progress';
         }
       }
 
@@ -147,7 +142,7 @@ export default function ProjectsPage() {
   const filteredProjects = getFilteredProjects();
 
   const getProjectTasks = (projectId) => {
-    return tasks.filter(t => t.project_id === projectId);
+    return tasks.filter(t => t.project === projectId);
   };
 
   const isManagerOrAdmin = currentUser?.role === 'admin' || currentUser?.role === 'manager';
@@ -231,15 +226,15 @@ export default function ProjectsPage() {
               <div className="text-sm text-gray-600">Meus Projetos</div>
             </div>
             <div className="bg-gray-100 rounded-xl p-4 shadow-neumorphic-inset text-center">
-              <div className="text-2xl font-bold text-green-600">{projects.filter(p => p.status === 'ativo').length}</div>
-              <div className="text-sm text-gray-600">Ativos</div>
+              <div className="text-2xl font-bold text-green-600">{projects.filter(p => p.status === 'in_progress').length}</div>
+              <div className="text-sm text-gray-600">Em Progresso</div>
             </div>
             <div className="bg-gray-100 rounded-xl p-4 shadow-neumorphic-inset text-center">
-              <div className="text-2xl font-bold text-yellow-600">{projects.filter(p => p.status === 'em_espera').length}</div>
+              <div className="text-2xl font-bold text-yellow-600">{projects.filter(p => p.status === 'on_hold').length}</div>
               <div className="text-sm text-gray-600">Em Espera</div>
             </div>
             <div className="bg-gray-100 rounded-xl p-4 shadow-neumorphic-inset text-center">
-              <div className="text-2xl font-bold text-gray-600">{projects.filter(p => p.status === 'concluido').length}</div>
+              <div className="text-2xl font-bold text-gray-600">{projects.filter(p => p.status === 'completed').length}</div>
               <div className="text-sm text-gray-600">Concluídos</div>
             </div>
           </div>
@@ -267,10 +262,11 @@ export default function ProjectsPage() {
                 className="w-full px-4 py-2 bg-gray-100 shadow-neumorphic-inset border-none rounded-xl text-gray-700 font-medium"
               >
                 <option value="all">Todos os Status</option>
-                <option value="ativo">Ativo</option>
-                <option value="em_espera">Em Espera</option>
-                <option value="concluido">Concluído</option>
-                <option value="arquivado">Arquivado</option>
+                <option value="planning">Planejamento</option>
+                <option value="in_progress">Em Progresso</option>
+                <option value="on_hold">Em Espera</option>
+                <option value="completed">Concluído</option>
+                <option value="cancelled">Cancelado</option>
               </select>
             </div>
 

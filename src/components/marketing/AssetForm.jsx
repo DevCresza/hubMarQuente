@@ -1,51 +1,107 @@
 
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Image, Upload, Plus } from "lucide-react";
+import { X, Image, Plus } from "lucide-react";
 
 export default function AssetForm({ asset, collections, brands, users, currentUser, onSave, onCancel }) {
+  // Mapeamento reverso para edição
+  const reverseTypeMapping = {
+    'image': 'foto',
+    'video': 'video',
+    'pdf': 'lookbook',
+    'design': 'outro'
+  };
+
+  const reverseCategoryMapping = {
+    'web': 'campanha',
+    'social': 'produto',
+    'print': 'editorial',
+    'email': 'campanha'
+  };
+
+  const reverseStatusMapping = {
+    'draft': 'rascunho',
+    'in_review': 'em_revisao',
+    'approved': 'aprovado',
+    'published': 'publicado',
+    'archived': 'arquivado'
+  };
+
   const [formData, setFormData] = useState({
-    title: asset?.title || "",
+    title: asset?.name || asset?.title || "",
     description: asset?.description || "",
-    type: asset?.type || "foto",
+    type: asset?.format || reverseTypeMapping[asset?.type] || "foto",
     collection_id: asset?.collection_id || "",
     brand_id: asset?.brand_id || "",
-    cover_url: asset?.cover_url || "",
+    cover_url: asset?.cover_url || asset?.file_url || "",
     file_links: asset?.file_links || [],
-    category: asset?.category || "campanha",
-    channel: asset?.channel || [],
-    status: asset?.status || "rascunho",
+    category: reverseCategoryMapping[asset?.category] || "campanha",
+    channel: asset?.channels || asset?.channel || [],
+    status: reverseStatusMapping[asset?.status] || "rascunho",
     tags: asset?.tags || []
   });
 
-  const [uploading, setUploading] = useState(false);
   const [tagInput, setTagInput] = useState("");
   const [linkInput, setLinkInput] = useState({ name: "", url: "", type: "drive" });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(formData);
+
+    // Mapear campos do formulário para a estrutura do banco de dados
+    const typeMapping = {
+      'foto': 'image',
+      'video': 'video',
+      'reel': 'video',
+      'story': 'image',
+      'post': 'image',
+      'banner': 'image',
+      'lookbook': 'pdf',
+      'catalog': 'pdf',
+      'outro': 'design'
+    };
+
+    const categoryMapping = {
+      'campanha': 'web',
+      'produto': 'social',
+      'lifestyle': 'social',
+      'evento': 'web',
+      'editorial': 'print',
+      'ugc': 'social',
+      'outro': 'web'
+    };
+
+    const statusMapping = {
+      'rascunho': 'draft',
+      'em_revisao': 'in_review',
+      'aprovado': 'approved',
+      'publicado': 'published',
+      'arquivado': 'archived'
+    };
+
+    const dataToSave = {
+      name: formData.title, // title → name
+      description: formData.description || null,
+      type: typeMapping[formData.type] || 'image',
+      category: categoryMapping[formData.category] || 'web',
+      file_url: formData.cover_url || null, // cover_url → file_url (nullable)
+      file_size: 0, // Placeholder
+      format: formData.type, // Manter tipo original como formato
+      brand_id: formData.brand_id || null,
+      collection_id: formData.collection_id || null,
+      status: statusMapping[formData.status] || 'draft',
+      channels: formData.channel.length > 0 ? formData.channel : null,
+      file_links: formData.file_links.length > 0 ? formData.file_links : null,
+      cover_url: formData.cover_url || null,
+      tags: formData.tags.length > 0 ? formData.tags : null
+    };
+
+    onSave(dataToSave);
   };
 
-  const handleCoverUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    setUploading(true);
-    try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      setFormData({ ...formData, cover_url: file_url });
-    } catch (error) {
-      console.error("Erro ao fazer upload:", error);
-      alert("Erro ao fazer upload da capa");
-    } finally {
-      setUploading(false);
-    }
-  };
+  // Função de upload removida - usar URL diretamente
 
   const handleAddLink = () => {
     if (linkInput.name.trim() && linkInput.url.trim()) {
@@ -225,19 +281,18 @@ export default function AssetForm({ asset, collections, brands, users, currentUs
             </div>
 
             <div>
-              <Label className="text-gray-700 mb-2 block font-semibold">Capa para Visualização</Label>
+              <Label className="text-gray-700 mb-2 block font-semibold">URL da Capa/Preview</Label>
               <Input
-                type="file"
-                onChange={handleCoverUpload}
+                type="url"
+                value={formData.cover_url}
+                onChange={(e) => setFormData({ ...formData, cover_url: e.target.value })}
+                placeholder="https://drive.google.com/... ou URL da imagem"
                 className="bg-gray-100 shadow-neumorphic-inset border-none text-gray-800"
-                disabled={uploading}
-                accept="image/*"
               />
-              {uploading && <span className="text-sm text-gray-500 mt-1">Enviando...</span>}
+              <p className="text-xs text-gray-500 mt-1">Cole o link de uma imagem do Drive, Dropbox ou URL direta</p>
               {formData.cover_url && (
                 <div className="mt-2">
-                  <img src={formData.cover_url} alt="Capa" className="w-32 h-32 object-cover rounded-lg shadow-neumorphic" />
-                  <p className="text-xs text-green-600 mt-1">✓ Capa enviada com sucesso</p>
+                  <p className="text-xs text-green-600">✓ URL da capa definida</p>
                 </div>
               )}
             </div>
@@ -388,7 +443,6 @@ export default function AssetForm({ asset, collections, brands, users, currentUs
             type="submit"
             form="asset-form"
             className="flex-1 bg-blue-500 hover:bg-blue-600 text-white shadow-neumorphic-soft hover:shadow-neumorphic-pressed transition-all duration-200 font-bold"
-            disabled={uploading}
           >
             {asset ? "Salvar" : "Criar Asset"}
           </Button>

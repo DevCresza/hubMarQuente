@@ -1,45 +1,39 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Edit, Trash2, Calendar, MapPin, Users, DollarSign, Building2 } from "lucide-react";
+import { ArrowLeft, Edit, Trash2, Calendar, MapPin, Users, Building2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 export default function CalendarEventDetails({ event, collections, users, departments, currentUser, onBack, onEdit, onUpdate }) {
-  const collection = collections.find(c => c.id === event.collection_id);
-  const department = departments.find(d => d.id === event.department_id);
+  const collection = collections.find(c => c.id === event.collection);
+  const department = departments.find(d => d.id === event.department);
 
   const getEventTypeLabel = (type) => {
     const types = {
-      lancamento_colecao: "Lançamento de Coleção",
-      pre_venda: "Pré-venda",
-      campanha_marketing: "Campanha de Marketing",
-      shooting: "Sessão de Fotos",
-      evento: "Evento",
-      social_media: "Social Media",
-      influencer: "Ação com Influencer",
-      outro: "Outro"
+      launch: "Lançamento",
+      photoshoot: "Sessão de Fotos",
+      meeting: "Reunião",
+      event: "Evento"
     };
     return types[type] || type;
   };
 
   const getStatusColor = (status) => {
     const colors = {
-      planejado: "bg-gray-100 text-gray-700",
-      confirmado: "bg-blue-100 text-blue-700",
-      em_andamento: "bg-yellow-100 text-yellow-700",
-      concluido: "bg-green-100 text-green-700",
-      cancelado: "bg-red-100 text-red-700"
+      scheduled: "bg-gray-100 text-gray-700",
+      confirmed: "bg-blue-100 text-blue-700",
+      completed: "bg-green-100 text-green-700",
+      cancelled: "bg-red-100 text-red-700"
     };
-    return colors[status] || colors.planejado;
+    return colors[status] || colors.scheduled;
   };
 
   const getStatusLabel = (status) => {
     const labels = {
-      planejado: "Planejado",
-      confirmado: "Confirmado",
-      em_andamento: "Em Andamento",
-      concluido: "Concluído",
-      cancelado: "Cancelado"
+      scheduled: "Agendado",
+      confirmed: "Confirmado",
+      completed: "Concluído",
+      cancelled: "Cancelado"
     };
     return labels[status] || status;
   };
@@ -67,9 +61,8 @@ export default function CalendarEventDetails({ event, collections, users, depart
           </div>
 
           <div className="flex items-start gap-4 mb-6">
-            <div 
-              className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-neumorphic-soft flex-shrink-0"
-              style={{ backgroundColor: event.color || '#3b82f6' }}
+            <div
+              className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-neumorphic-soft flex-shrink-0 bg-blue-500"
             >
               <Calendar className="w-8 h-8 text-white" />
             </div>
@@ -126,18 +119,6 @@ export default function CalendarEventDetails({ event, collections, users, depart
                   <p className="text-xs text-gray-500 font-semibold">Departamento</p>
                 </div>
                 <p className="text-gray-800 font-semibold">{department.name}</p>
-              </div>
-            )}
-
-            {event.budget && (
-              <div className="bg-gray-100 rounded-2xl p-4 shadow-neumorphic-inset">
-                <div className="flex items-center gap-2 mb-2">
-                  <DollarSign className="w-4 h-4 text-gray-500" />
-                  <p className="text-xs text-gray-500 font-semibold">Orçamento</p>
-                </div>
-                <p className="text-gray-800 font-semibold">
-                  R$ {parseFloat(event.budget).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                </p>
               </div>
             )}
 

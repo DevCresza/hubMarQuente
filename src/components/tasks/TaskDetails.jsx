@@ -20,56 +20,43 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 const statusConfig = {
-  nao_iniciado: { label: "Não Iniciado", color: "bg-gray-100 text-gray-700" },
-  em_progresso: { label: "Em Progresso", color: "bg-blue-100 text-blue-700" },
-  concluido: { label: "Concluído", color: "bg-green-100 text-green-700" },
-  cancelado: { label: "Cancelado", color: "bg-red-100 text-red-700" }
+  todo: { label: "Não Iniciado", color: "bg-gray-100 text-gray-700" },
+  in_progress: { label: "Em Progresso", color: "bg-blue-100 text-blue-700" },
+  done: { label: "Concluído", color: "bg-green-100 text-green-700" },
+  blocked: { label: "Bloqueado", color: "bg-red-100 text-red-700" }
 };
 
 const priorityConfig = {
-  baixa: { label: "Baixa", color: "bg-gray-100 text-gray-600" },
-  media: { label: "Média", color: "bg-yellow-100 text-yellow-700" },
-  alta: { label: "Alta", color: "bg-orange-100 text-orange-700" },
-  urgente: { label: "Urgente", color: "bg-red-100 text-red-700" }
+  low: { label: "Baixa", color: "bg-gray-100 text-gray-600" },
+  medium: { label: "Média", color: "bg-yellow-100 text-yellow-700" },
+  high: { label: "Alta", color: "bg-orange-100 text-orange-700" },
+  critical: { label: "Urgente", color: "bg-red-100 text-red-700" }
 };
 
 export default function TaskDetails({ task, users, departments, collections, currentUser, allTasks = [], onBack, onEdit, onDelete, onStatusChange }) {
   const [showStatusMenu, setShowStatusMenu] = useState(false);
 
-  const status = statusConfig[task.status] || statusConfig.nao_iniciado;
-  const priority = priorityConfig[task.priority] || priorityConfig.media;
+  const status = statusConfig[task.status] || statusConfig.todo;
+  const priority = priorityConfig[task.priority] || priorityConfig.medium;
   const assignedUser = users.find(u => u.id === task.assigned_to);
   const department = departments.find(d => d.id === task.department_id);
-  const collection = collections.find(c => c.id === task.collection_id);
 
   // Verificar se está atrasada
-  const isOverdue = task.due_date && task.status !== 'concluido' && new Date(task.due_date) < new Date();
-
-  // Dependências
-  const dependencyTasks = task.dependencies
-    ? allTasks.filter(t => task.dependencies.includes(t.id))
-    : [];
-  const pendingDependencies = dependencyTasks.filter(t => t.status !== 'concluido');
-  const hasPendingDependencies = pendingDependencies.length > 0;
-
-  // Tarefas que dependem desta
-  const dependentTasks = allTasks.filter(t =>
-    t.dependencies && t.dependencies.includes(task.id)
-  );
+  const isOverdue = task.due_date && task.status !== 'done' && new Date(task.due_date) < new Date();
 
   const canEdit = currentUser?.id === task.assigned_to || currentUser?.role === 'admin';
 
   // Opções de mudança de status
   const statusTransitions = {
-    nao_iniciado: [
-      { status: 'em_progresso', label: 'Iniciar Tarefa', icon: Clock, color: 'bg-blue-500' },
+    todo: [
+      { status: 'in_progress', label: 'Iniciar Tarefa', icon: Clock, color: 'bg-blue-500' },
     ],
-    em_progresso: [
-      { status: 'concluido', label: 'Concluir Tarefa', icon: CheckCircle, color: 'bg-green-500' },
-      { status: 'nao_iniciado', label: 'Voltar para Não Iniciado', icon: ArrowLeft, color: 'bg-gray-500' },
+    in_progress: [
+      { status: 'done', label: 'Concluir Tarefa', icon: CheckCircle, color: 'bg-green-500' },
+      { status: 'todo', label: 'Voltar para Não Iniciado', icon: ArrowLeft, color: 'bg-gray-500' },
     ],
-    concluido: [
-      { status: 'em_progresso', label: 'Reabrir Tarefa', icon: Clock, color: 'bg-blue-500' },
+    done: [
+      { status: 'in_progress', label: 'Reabrir Tarefa', icon: Clock, color: 'bg-blue-500' },
     ]
   };
 
@@ -149,31 +136,6 @@ export default function TaskDetails({ task, users, departments, collections, cur
               </div>
             )}
 
-            {/* Info de Dependências Pendentes - Tom informativo */}
-            {hasPendingDependencies && task.status === 'nao_iniciado' && (
-              <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-6 shadow-neumorphic-inset">
-                <div className="flex items-start gap-3">
-                  <Link2 className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold text-blue-800 mb-2">Dependências Pendentes</h3>
-                    <p className="text-blue-700 mb-3">
-                      Esta tarefa aguarda a conclusão de {pendingDependencies.length} outra{pendingDependencies.length > 1 ? 's' : ''} tarefa{pendingDependencies.length > 1 ? 's' : ''}:
-                    </p>
-                    <div className="space-y-2">
-                      {pendingDependencies.map(dep => (
-                        <div key={dep.id} className="bg-white rounded-lg p-3 border border-blue-200">
-                          <p className="font-semibold text-gray-800">{dep.title}</p>
-                          <p className="text-sm text-gray-600">
-                            Status: {dep.status === 'em_progresso' ? 'Em Progresso' : 'Não Iniciada'}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {/* Descrição */}
             {task.description && (
               <div className="bg-gray-100 rounded-2xl shadow-neumorphic p-6">
@@ -182,61 +144,10 @@ export default function TaskDetails({ task, users, departments, collections, cur
               </div>
             )}
 
-            {/* Dependências - Se todas concluídas */}
-            {dependencyTasks.length > 0 && !hasPendingDependencies && (
-              <div className="bg-gray-100 rounded-2xl shadow-neumorphic p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Link2 className="w-5 h-5 text-green-600" />
-                  <h3 className="text-xl font-semibold text-gray-800">Dependências Concluídas</h3>
-                </div>
-                <div className="space-y-3">
-                  {dependencyTasks.map(dep => (
-                    <div
-                      key={dep.id}
-                      className="p-4 rounded-xl bg-green-50 border-2 border-green-200"
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="font-semibold text-gray-800">{dep.title}</p>
-                        <CheckCircle className="w-5 h-5 text-green-600" />
-                      </div>
-                      <p className="text-sm text-gray-600">
-                        Concluída ✓
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Tarefas Dependentes */}
-            {dependentTasks.length > 0 && (
-              <div className="bg-gray-100 rounded-2xl shadow-neumorphic p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Link2 className="w-5 h-5 text-purple-600" />
-                  <h3 className="text-xl font-semibold text-gray-800">Tarefas que Dependem Desta</h3>
-                </div>
-                <p className="text-sm text-gray-600 mb-3">
-                  {dependentTasks.length} tarefa{dependentTasks.length > 1 ? 's' : ''} aguardando conclusão desta
-                </p>
-                <div className="space-y-2">
-                  {dependentTasks.map(dep => (
-                    <div key={dep.id} className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
-                      <p className="font-semibold text-gray-800 text-sm">{dep.title}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {/* Quick Status Change */}
-            {canEdit && task.status !== "concluido" && availableTransitions.length > 0 && (
+            {canEdit && task.status !== "done" && availableTransitions.length > 0 && (
               <div className="bg-gray-100 rounded-2xl shadow-neumorphic p-6">
                 <h3 className="text-xl font-semibold text-gray-800 mb-4">Mudar Status da Tarefa</h3>
-                {hasPendingDependencies && task.status === 'nao_iniciado' && (
-                  <p className="text-sm text-blue-600 mb-3">
-                    💡 Aguardando conclusão de dependências
-                  </p>
-                )}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {availableTransitions.map((transition, index) => {
                     const TransitionIcon = transition.icon;
@@ -330,28 +241,15 @@ export default function TaskDetails({ task, users, departments, collections, cur
             )}
 
             {/* Relacionamentos */}
-            {(collection || department) && (
+            {department && (
               <div className="bg-gray-100 rounded-2xl shadow-neumorphic p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Relacionado com</h3>
-                <div className="space-y-3">
-                  {collection && (
-                    <div className="flex items-center gap-3">
-                      <Shirt className="w-4 h-4 text-gray-500" />
-                      <div>
-                        <p className="text-sm text-gray-500">Coleção</p>
-                        <p className="font-semibold text-gray-700">{collection.name}</p>
-                      </div>
-                    </div>
-                  )}
-                  {department && (
-                    <div className="flex items-center gap-3">
-                      <Briefcase className="w-4 h-4 text-gray-500" />
-                      <div>
-                        <p className="text-sm text-gray-500">Departamento</p>
-                        <p className="font-semibold text-gray-700">{department.name}</p>
-                      </div>
-                    </div>
-                  )}
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Departamento</h3>
+                <div className="flex items-center gap-3">
+                  <Briefcase className="w-4 h-4 text-gray-500" />
+                  <div>
+                    <p className="text-sm text-gray-500">Departamento</p>
+                    <p className="font-semibold text-gray-700">{department.name}</p>
+                  </div>
                 </div>
               </div>
             )}

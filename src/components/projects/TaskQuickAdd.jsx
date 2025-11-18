@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Plus, X, Clock, Link2 } from "lucide-react";
+import { Plus, X, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -10,19 +10,16 @@ export default function TaskQuickAdd({ sectionId, projectId, users, allTasks = [
   const [assignedTo, setAssignedTo] = useState(currentUser?.id || "");
   const [duration, setDuration] = useState("");
   const [durationType, setDurationType] = useState("dias");
-  const [showDependencies, setShowDependencies] = useState(false);
-  const [selectedDependencies, setSelectedDependencies] = useState([]);
 
   const handleAdd = () => {
     if (!taskTitle.trim()) return;
-    
+
     const taskData = {
       title: taskTitle,
-      project_id: projectId, // Adicionar project_id obrigatório
-      status: "nao_iniciado",
-      priority: "media",
-      assigned_to: assignedTo || currentUser?.id,
-      dependencies: selectedDependencies
+      project: projectId,
+      status: "todo",
+      priority: "medium",
+      assigned_to: assignedTo || currentUser?.id
     };
 
     // Calcular datas automaticamente se duração foi especificada
@@ -50,20 +47,11 @@ export default function TaskQuickAdd({ sectionId, projectId, users, allTasks = [
     }
     
     onAdd(taskData, sectionId);
-    
+
     setTaskTitle("");
     setAssignedTo(currentUser?.id || "");
     setDuration("");
-    setSelectedDependencies([]);
     setShowForm(false);
-  };
-
-  const handleToggleDependency = (taskId) => {
-    if (selectedDependencies.includes(taskId)) {
-      setSelectedDependencies(selectedDependencies.filter(id => id !== taskId));
-    } else {
-      setSelectedDependencies([...selectedDependencies, taskId]);
-    }
   };
 
   if (!showForm) {
@@ -137,39 +125,6 @@ export default function TaskQuickAdd({ sectionId, projectId, users, allTasks = [
         </select>
       </div>
 
-      {/* Dependências */}
-      {allTasks.length > 0 && (
-        <div className="mb-2">
-          <button
-            type="button"
-            onClick={() => setShowDependencies(!showDependencies)}
-            className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-800 mb-1"
-          >
-            <Link2 className="w-3 h-3" />
-            Dependências {selectedDependencies.length > 0 && `(${selectedDependencies.length})`}
-          </button>
-          
-          {showDependencies && (
-            <div className="max-h-32 overflow-y-auto bg-gray-50 rounded-lg p-2 border border-gray-200">
-              {allTasks.map(task => (
-                <label 
-                  key={task.id}
-                  className="flex items-center gap-2 p-1 hover:bg-gray-100 rounded cursor-pointer text-xs"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedDependencies.includes(task.id)}
-                    onChange={() => handleToggleDependency(task.id)}
-                    className="w-3 h-3 rounded"
-                  />
-                  <span className="flex-1 truncate">{task.title}</span>
-                </label>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
       <div className="flex gap-2">
         <Button 
           onClick={handleAdd}
@@ -179,13 +134,12 @@ export default function TaskQuickAdd({ sectionId, projectId, users, allTasks = [
         >
           Adicionar
         </Button>
-        <Button 
+        <Button
           onClick={() => {
             setShowForm(false);
             setTaskTitle("");
             setAssignedTo(currentUser?.id || "");
             setDuration("");
-            setSelectedDependencies([]);
           }}
           variant="ghost"
           size="sm"
@@ -194,15 +148,10 @@ export default function TaskQuickAdd({ sectionId, projectId, users, allTasks = [
           <X className="w-4 h-4" />
         </Button>
       </div>
-      
+
       {duration && parseFloat(duration) > 0 && (
         <p className="text-xs text-gray-500 mt-2">
           Início hoje → Prazo em {duration} {durationType}
-        </p>
-      )}
-      {selectedDependencies.length > 0 && (
-        <p className="text-xs text-orange-600 mt-1">
-          Esta tarefa depende de {selectedDependencies.length} outra(s)
         </p>
       )}
     </div>

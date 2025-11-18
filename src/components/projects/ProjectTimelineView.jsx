@@ -118,9 +118,9 @@ export default function ProjectTimelineView({ project, tasks = [], users }) {
 
   const getTaskColor = (status) => {
     switch (status) {
-      case 'concluido':
+      case 'done':
         return 'bg-green-500 border-green-600';
-      case 'em_progresso':
+      case 'in_progress':
         return 'bg-blue-500 border-blue-600';
       default:
         return 'bg-gray-400 border-gray-500';
@@ -304,7 +304,7 @@ export default function ProjectTimelineView({ project, tasks = [], users }) {
                     {sectionTasks.map((task) => {
                       const position = getTaskPosition(task);
                       const assignedUser = users.find(u => u.id === task.assigned_to);
-                      const isOverdue = task.due_date && task.status !== 'concluido' && new Date(task.due_date) < new Date();
+                      const isOverdue = task.due_date && task.status !== 'done' && new Date(task.due_date) < new Date();
                       const duration = differenceInDays(new Date(task.due_date), new Date(task.start_date)) + 1;
 
                       return (
@@ -313,9 +313,9 @@ export default function ProjectTimelineView({ project, tasks = [], users }) {
                           <div className="flex items-center gap-3 mb-1">
                             <div className="w-48 flex-shrink-0">
                               <div className="flex items-center gap-2 mb-1">
-                                {task.status === 'concluido' ? (
+                                {task.status === 'done' ? (
                                   <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                                ) : task.status === 'em_progresso' ? (
+                                ) : task.status === 'in_progress' ? (
                                   <Clock className="w-4 h-4 text-blue-500 flex-shrink-0" />
                                 ) : (
                                   <div className="w-4 h-4 rounded-full border-2 border-gray-400 flex-shrink-0" />
@@ -357,7 +357,7 @@ export default function ProjectTimelineView({ project, tasks = [], users }) {
                                 </span>
                               </div>
                               {/* Indicador de progresso se em progresso */}
-                              {task.status === 'em_progresso' && task.estimated_hours && task.actual_hours && (
+                              {task.status === 'in_progress' && task.estimated_hours && task.actual_hours && (
                                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-white bg-opacity-30">
                                   <div 
                                     className="h-full bg-white"
@@ -400,7 +400,7 @@ export default function ProjectTimelineView({ project, tasks = [], users }) {
                   {tasksBySection['no_section'].map((task) => {
                     const position = getTaskPosition(task);
                     const assignedUser = users.find(u => u.id === task.assigned_to);
-                    const isOverdue = task.due_date && task.status !== 'concluido' && new Date(task.due_date) < new Date();
+                    const isOverdue = task.due_date && task.status !== 'done' && new Date(task.due_date) < new Date();
                     const duration = differenceInDays(new Date(task.due_date), new Date(task.start_date)) + 1;
 
                     return (
@@ -408,9 +408,9 @@ export default function ProjectTimelineView({ project, tasks = [], users }) {
                         <div className="flex items-center gap-3 mb-1">
                           <div className="w-48 flex-shrink-0">
                             <div className="flex items-center gap-2 mb-1">
-                              {task.status === 'concluido' ? (
+                              {task.status === 'done' ? (
                                 <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                              ) : task.status === 'em_progresso' ? (
+                              ) : task.status === 'in_progress' ? (
                                 <Clock className="w-4 h-4 text-blue-500 flex-shrink-0" />
                               ) : (
                                 <div className="w-4 h-4 rounded-full border-2 border-gray-400 flex-shrink-0" />

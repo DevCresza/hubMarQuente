@@ -70,11 +70,26 @@ export default function MarketingDirectoryPage() {
 
   const handleSaveAsset = async (assetData) => {
     try {
+      // Campos permitidos na tabela marketing_assets
+      const allowedFields = [
+        'name', 'description', 'type', 'category', 'file_url', 'file_size',
+        'dimensions', 'format', 'campaign', 'created_by', 'tags',
+        'brand_id', 'collection_id', 'status', 'channels', 'file_links', 'cover_url'
+      ];
+
+      // Filtrar apenas campos permitidos
+      const cleanAssetData = {};
+      Object.keys(assetData).forEach(key => {
+        if (allowedFields.includes(key) && assetData[key] !== undefined) {
+          cleanAssetData[key] = assetData[key];
+        }
+      });
+
       if (editingAsset) {
-        await base44.entities.MarketingAsset.update(editingAsset.id, assetData);
+        await base44.entities.MarketingAsset.update(editingAsset.id, cleanAssetData);
       } else {
         await base44.entities.MarketingAsset.create({
-          ...assetData,
+          ...cleanAssetData,
           created_by: currentUser?.id
         });
       }
@@ -83,13 +98,25 @@ export default function MarketingDirectoryPage() {
       loadData();
     } catch (error) {
       console.error("Erro ao salvar asset:", error);
-      alert("Erro ao salvar asset. Verifique os dados e tente novamente.");
+      alert("Erro ao salvar asset: " + (error.message || "Verifique os dados e tente novamente."));
     }
   };
 
   const handleEditAsset = (asset) => {
     setEditingAsset(asset);
     setShowForm(true);
+  };
+
+  const handleDeleteAsset = async (assetId) => {
+    if (confirm("Tem certeza que deseja excluir este asset?")) {
+      try {
+        await base44.entities.MarketingAsset.delete(assetId);
+        loadData();
+      } catch (error) {
+        console.error("Erro ao excluir asset:", error);
+        alert("Erro ao excluir asset: " + (error.message || "Tente novamente"));
+      }
+    }
   };
 
   const handleViewAsset = (asset) => {
@@ -118,8 +145,8 @@ export default function MarketingDirectoryPage() {
 
   const getFilteredAssets = () => {
     return assets.filter(asset => {
-      const searchMatch = 
-        asset.title?.toLowerCase().includes(filters.search.toLowerCase()) ||
+      const searchMatch =
+        asset.name?.toLowerCase().includes(filters.search.toLowerCase()) ||
         asset.description?.toLowerCase().includes(filters.search.toLowerCase());
 
       const typeMatch = filters.type === "all" || asset.type === filters.type;
@@ -248,6 +275,7 @@ export default function MarketingDirectoryPage() {
               onSelect={() => handleToggleSelect(asset)}
               onView={() => handleViewAsset(asset)}
               onEdit={() => handleEditAsset(asset)}
+              onDelete={() => handleDeleteAsset(asset.id)}
             />
           ))}
         </div>

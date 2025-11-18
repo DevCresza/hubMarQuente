@@ -31,11 +31,11 @@ export default function ProjectFilters({ filters, setFilters, projectCount }) {
             className="w-full px-4 py-2 bg-gray-100 shadow-neumorphic-inset border-none rounded-xl text-gray-700 font-medium text-sm"
           >
             <option value="all">Todos os Status</option>
-            <option value="planejamento">Planejamento</option>
-            <option value="em_andamento">Em Andamento</option>
-            <option value="pausado">Pausado</option>
-            <option value="concluido">Concluído</option>
-            <option value="cancelado">Cancelado</option>
+            <option value="planning">Planejamento</option>
+            <option value="in_progress">Em Progresso</option>
+            <option value="on_hold">Em Espera</option>
+            <option value="completed">Concluído</option>
+            <option value="cancelled">Cancelado</option>
           </select>
         </div>
 
@@ -46,10 +46,10 @@ export default function ProjectFilters({ filters, setFilters, projectCount }) {
             className="w-full px-4 py-2 bg-gray-100 shadow-neumorphic-inset border-none rounded-xl text-gray-700 font-medium text-sm"
           >
             <option value="all">Todas Prioridades</option>
-            <option value="baixa">Baixa</option>
-            <option value="media">Média</option>
-            <option value="alta">Alta</option>
-            <option value="urgente">Urgente</option>
+            <option value="low">Baixa</option>
+            <option value="medium">Média</option>
+            <option value="high">Alta</option>
+            <option value="critical">Urgente</option>
           </select>
         </div>
 

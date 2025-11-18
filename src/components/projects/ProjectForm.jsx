@@ -10,7 +10,8 @@ export default function ProjectForm({ project, users, departments, currentUser, 
     name: project?.name || "",
     description: project?.description || "",
     department_id: project?.department_id || "",
-    status: project?.status || "ativo",
+    status: project?.status || "planning",
+    priority: project?.priority || "medium",
     start_date: project?.start_date || "",
     due_date: project?.due_date || "",
     owner_id: project?.owner_id || currentUser?.id || "",
@@ -148,10 +149,28 @@ export default function ProjectForm({ project, users, departments, currentUser, 
                       onChange={(e) => setFormData({...formData, status: e.target.value})}
                       className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-gray-700"
                     >
-                      <option value="ativo">Ativo</option>
-                      <option value="em_espera">Em Espera</option>
-                      <option value="concluido">Concluído</option>
-                      <option value="arquivado">Arquivado</option>
+                      <option value="planning">Planejamento</option>
+                      <option value="in_progress">Em Progresso</option>
+                      <option value="on_hold">Em Espera</option>
+                      <option value="completed">Concluído</option>
+                      <option value="cancelled">Cancelado</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm text-gray-700 mb-2 block font-semibold">Prioridade *</Label>
+                    <select
+                      value={formData.priority}
+                      onChange={(e) => setFormData({...formData, priority: e.target.value})}
+                      className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-gray-700"
+                      required
+                    >
+                      <option value="low">Baixa</option>
+                      <option value="medium">Média</option>
+                      <option value="high">Alta</option>
+                      <option value="critical">Urgente</option>
                     </select>
                   </div>
                 </div>

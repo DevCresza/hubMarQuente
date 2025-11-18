@@ -32,7 +32,12 @@ import TaskForm from "../tasks/TaskForm";
 
 export default function ProjectDetails({ project, users, departments, currentUser, onBack, onEdit }) {
   const [tasks, setTasks] = useState([]);
-  const [sections, setSections] = useState(project.sections || []);
+  // Seções padrão em memória (não persistidas no banco de dados)
+  const [sections] = useState([
+    { id: "section-1", name: "A Fazer", order: 0, collapsed: false },
+    { id: "section-2", name: "Em Andamento", order: 1, collapsed: false },
+    { id: "section-3", name: "Concluído", order: 2, collapsed: false }
+  ]);
   const [viewMode, setViewMode] = useState(project.default_view || "list");
   const [loading, setLoading] = useState(true);
   const [collapsedSections, setCollapsedSections] = useState(new Set());
@@ -50,7 +55,7 @@ export default function ProjectDetails({ project, users, departments, currentUse
     try {
       setLoading(true);
       const allTasks = await base44.entities.Task.list();
-      const projectTasks = allTasks.filter(t => t.project_id === project.id);
+      const projectTasks = allTasks.filter(t => t.project === project.id);
       setTasks(projectTasks);
     } catch (error) {
       console.error("Erro ao carregar tarefas:", error);
@@ -61,33 +66,33 @@ export default function ProjectDetails({ project, users, departments, currentUse
 
   const handleAddTask = async (taskData, sectionId) => {
     try {
-      // Garantir que project_id e estimated_hours sejam válidos
-      const cleanTaskData = {
+      // Campos permitidos na tabela tasks
+      const allowedFields = [
+        'title', 'description', 'status', 'priority', 'assigned_to',
+        'department', 'project', 'due_date', 'completed_date',
+        'tags', 'estimated_hours', 'actual_hours'
+      ];
+
+      // Garantir que project está definido
+      const dataWithProject = {
         ...taskData,
-        project_id: project.id,
-        section_id: sectionId,
-        created_by: currentUser?.id,
-        order: tasks.filter(t => t.section_id === sectionId).length
+        project: project.id
       };
 
+      // Filtrar apenas campos permitidos
+      const cleanTaskData = {};
+      Object.keys(dataWithProject).forEach(key => {
+        if (allowedFields.includes(key) && dataWithProject[key] !== undefined && dataWithProject[key] !== "") {
+          cleanTaskData[key] = dataWithProject[key];
+        }
+      });
+
       // Remover estimated_hours se não for um número válido
-      if (cleanTaskData.estimated_hours === "" || isNaN(cleanTaskData.estimated_hours)) {
+      if (cleanTaskData.estimated_hours !== undefined && isNaN(cleanTaskData.estimated_hours)) {
         delete cleanTaskData.estimated_hours;
       }
 
       await base44.entities.Task.create(cleanTaskData);
-      
-      if (project.email_notifications && taskData.assigned_to) {
-        const assignedUser = users.find(u => u.id === taskData.assigned_to);
-        if (assignedUser) {
-          await base44.integrations.Core.SendEmail({
-            to: assignedUser.email,
-            subject: `Nova tarefa em ${project.name}`,
-            body: `Você foi designado para uma nova tarefa: ${taskData.title}\n\nProjeto: ${project.name}\nPrazo: ${taskData.due_date ? new Date(taskData.due_date).toLocaleDateString('pt-BR') : 'Sem prazo'}`
-          });
-        }
-      }
-      
       await loadTasks();
     } catch (error) {
       console.error("Erro ao criar tarefa:", error);
@@ -100,81 +105,31 @@ export default function ProjectDetails({ project, users, departments, currentUse
       const task = tasks.find(t => t.id === taskId);
       if (!task) return;
 
-      const updates = { ...initialUpdates }; // Create a mutable copy of updates
-      let targetSectionId = updates.section_id || task.section_id;
-      
-      const maxSectionOrder = sections.length > 0 ? Math.max(...sections.map(s => s.order)) : -1;
+      const updates = { ...initialUpdates };
 
-      // Verificar se está movendo para a última seção - marcar como concluída
-      const targetSection = sections.find(s => s.id === targetSectionId);
-      const isLastSection = targetSection && targetSection.order === maxSectionOrder;
-      
-      if (isLastSection && updates.section_id && updates.section_id !== task.section_id) {
-        // Movendo para a última seção - marcar como concluída
-        updates.status = 'concluido';
-        if (!updates.completed_date) { // Only set if not explicitly provided in initialUpdates
-            updates.completed_date = new Date().toISOString().split('T')[0];
-        }
-      } else if (updates.status === 'em_progresso' && task.status !== 'em_progresso') {
-        const inProgressSection = sections.find(s => 
-          s.name.toLowerCase().includes('andamento') || 
-          s.name.toLowerCase().includes('progresso') ||
-          s.order === 1
-        );
-        if (inProgressSection && !initialUpdates.section_id) { // Only infer section if not explicitly set by drag/drop
-          targetSectionId = inProgressSection.id;
-        }
-      } else if (updates.status === 'concluido' && task.status !== 'concluido') {
-        const doneSection = sections.find(s => 
-          s.name.toLowerCase().includes('conclu') || 
-          s.name.toLowerCase().includes('done') ||
-          s.order === maxSectionOrder
-        );
-        if (doneSection && !initialUpdates.section_id) { // Only infer section if not explicitly set by drag/drop
-          targetSectionId = doneSection.id;
-          if (!updates.completed_date) { // Ensure completed_date is set if status is forced to concluded
-            updates.completed_date = new Date().toISOString().split('T')[0];
-          }
-        }
-      }
-      
-      // Additional logic for handling completed_date based on final status in 'updates'
-      // If status is being set to 'concluido', ensure completed_date is set if not already.
-      if (updates.status === 'concluido' && !updates.completed_date) {
-          updates.completed_date = new Date().toISOString().split('T')[0];
-      } 
-      // If status is being set to anything else (or was implicitly reverted) AND was previously 'concluido', clear completed_date.
-      else if (updates.status && updates.status !== 'concluido' && task.status === 'concluido') {
-          updates.completed_date = null;
-      }
-      // If a task was in the last section and moved out, and its status wasn't explicitly changed,
-      // it should revert from 'concluido'.
-      else if (task.status === 'concluido' && initialUpdates.section_id && initialUpdates.section_id !== task.section_id) {
-        const newSection = sections.find(s => s.id === initialUpdates.section_id);
-        if (newSection && newSection.order !== maxSectionOrder) {
-          updates.status = 'a_fazer'; // Default to 'a_fazer' when moved out of done section
-          updates.completed_date = null;
-        }
+      // Manage completed_date based on status
+      if (updates.status === 'done' && !updates.completed_date) {
+        updates.completed_date = new Date().toISOString().split('T')[0];
+      } else if (updates.status && updates.status !== 'done' && task.status === 'done') {
+        updates.completed_date = null;
       }
 
+      // Filtrar apenas campos que existem na tabela tasks
+      const allowedFields = [
+        'title', 'description', 'status', 'priority', 'assigned_to',
+        'department', 'project', 'due_date', 'completed_date',
+        'tags', 'estimated_hours', 'actual_hours'
+      ];
 
-      await base44.entities.Task.update(taskId, { 
-        ...task, 
-        ...updates,
-        section_id: targetSectionId
+      const cleanUpdates = {};
+      Object.keys(updates).forEach(key => {
+        if (allowedFields.includes(key) && updates[key] !== undefined) {
+          cleanUpdates[key] = updates[key];
+        }
       });
-      
-      if (project.email_notifications && updates.status && updates.status !== task.status) {
-        const assignedUser = users.find(u => u.id === task.assigned_to);
-        if (assignedUser) {
-          await base44.integrations.Core.SendEmail({
-            to: assignedUser.email,
-            subject: `Atualização em tarefa de ${project.name}`,
-            body: `A tarefa "${task.title}" foi atualizada.\n\nNovo status: ${updates.status}\nProjeto: ${project.name}`
-          });
-        }
-      }
-      
+
+      await base44.entities.Task.update(taskId, cleanUpdates);
+
       await loadTasks();
     } catch (error) {
       console.error("Erro ao atualizar tarefa:", error);
@@ -188,8 +143,7 @@ export default function ProjectDetails({ project, users, departments, currentUse
       } else {
         await base44.entities.Task.create({
           ...taskData,
-          project_id: project.id,
-          created_by: currentUser?.id
+          project: project.id
         });
       }
       
@@ -212,86 +166,21 @@ export default function ProjectDetails({ project, users, departments, currentUse
     }
   };
 
-  const handleAddSection = async () => {
-    const sectionName = prompt("Nome da seção:");
-    if (!sectionName) return;
+  // Seções agora são fixas e não podem ser adicionadas/editadas/removidas
+  // pois não há suporte no banco de dados para persistir esta informação
 
-    const newSection = {
-      id: `section-${Date.now()}`,
-      name: sectionName,
-      order: sections.length > 0 ? Math.max(...sections.map(s => s.order)) + 1 : 0, // Ensure unique and sequential order
-      collapsed: false
-    };
-
-    const updatedSections = [...sections, newSection].sort((a,b) => a.order - b.order); // Keep sections sorted by order
-    setSections(updatedSections);
-
-    try {
-      await base44.entities.Project.update(project.id, {
-        ...project,
-        sections: updatedSections
-      });
-    } catch (error) {
-      console.error("Erro ao adicionar seção:", error);
-    }
+  const handleAddSection = () => {
+    alert("As seções são fixas nesta versão. Use: A Fazer, Em Andamento, Concluído");
   };
 
-  const handleRenameSection = (sectionId, newName) => {
-    if (!newName.trim()) return;
-    
-    const updatedSections = sections.map(s => 
-      s.id === sectionId ? { ...s, name: newName } : s
-    );
-    setSections(updatedSections);
-    
-    base44.entities.Project.update(project.id, {
-      ...project,
-      sections: updatedSections
-    }).catch(error => {
-      console.error("Erro ao renomear seção:", error);
-    });
-    
+  const handleRenameSection = () => {
+    alert("As seções não podem ser renomeadas nesta versão.");
     setEditingSectionId(null);
     setEditingSectionName("");
   };
 
-  const handleDeleteSection = async (sectionId) => {
-    const sectionTasks = tasks.filter(t => t.section_id === sectionId);
-    
-    if (sectionTasks.length > 0) {
-      if (!confirm(`Esta seção tem ${sectionTasks.length} tarefa(s). Tem certeza que deseja excluir? Todas as tarefas nela serão movidas para "A Fazer".`)) {
-        return;
-      }
-    }
-    
-    // Find a default section to move tasks to, e.g., the first section
-    const defaultSection = sections.find(s => s.order === 0);
-
-    // Update tasks to move them out of the deleted section
-    const tasksToUpdate = tasks.filter(t => t.section_id === sectionId);
-    for (const task of tasksToUpdate) {
-      await base44.entities.Task.update(task.id, {
-        ...task,
-        section_id: defaultSection ? defaultSection.id : null, // Assign to default or null if no default
-        status: 'a_fazer' // Reset status
-      });
-    }
-
-    const updatedSections = sections.filter(s => s.id !== sectionId);
-    // Re-order remaining sections to maintain sequential order (optional, but good practice)
-    const reorderedSections = updatedSections.map((s, index) => ({ ...s, order: index }));
-
-    setSections(reorderedSections);
-    
-    try {
-      await base44.entities.Project.update(project.id, {
-        ...project,
-        sections: reorderedSections
-      });
-      await loadTasks(); // Reload tasks after moving and deleting section
-    } catch (error) {
-      console.error("Erro ao deletar seção:", error);
-    }
+  const handleDeleteSection = () => {
+    alert("As seções padrão não podem ser removidas.");
   };
 
   const toggleSection = (sectionId) => {
@@ -305,7 +194,14 @@ export default function ProjectDetails({ project, users, departments, currentUse
   };
 
   const getTasksBySection = (sectionId) => {
-    return tasks.filter(t => t.section_id === sectionId).sort((a, b) => (a.order || 0) - (b.order || 0));
+    // Seções são apenas visuais, agrupamos por status
+    const statusMap = {
+      "section-1": ["todo"],
+      "section-2": ["in_progress"],
+      "section-3": ["done"]
+    };
+    const statuses = statusMap[sectionId] || [];
+    return tasks.filter(t => statuses.includes(t.status));
   };
 
   const handleViewTask = (task) => {

@@ -25,26 +25,26 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const statusConfig = {
-  nao_iniciado: { label: "Não Iniciado", color: "bg-gray-100 text-gray-700", icon: Circle },
-  em_progresso: { label: "Em Progresso", color: "bg-blue-100 text-blue-700", icon: Clock },
-  concluido: { label: "Concluído", color: "bg-green-100 text-green-700", icon: CheckCircle2 },
-  cancelado: { label: "Cancelado", color: "bg-red-100 text-red-700", icon: Circle }
+  todo: { label: "Não Iniciado", color: "bg-gray-100 text-gray-700", icon: Circle },
+  in_progress: { label: "Em Progresso", color: "bg-blue-100 text-blue-700", icon: Clock },
+  done: { label: "Concluído", color: "bg-green-100 text-green-700", icon: CheckCircle2 },
+  blocked: { label: "Bloqueado", color: "bg-red-100 text-red-700", icon: Circle }
 };
 
 const priorityConfig = {
-  baixa: { label: "Baixa", color: "bg-gray-100 text-gray-600" },
-  media: { label: "Média", color: "bg-yellow-100 text-yellow-700" },
-  alta: { label: "Alta", color: "bg-orange-100 text-orange-700" },
-  urgente: { label: "Urgente", color: "bg-red-100 text-red-700" }
+  low: { label: "Baixa", color: "bg-gray-100 text-gray-600" },
+  medium: { label: "Média", color: "bg-yellow-100 text-yellow-700" },
+  high: { label: "Alta", color: "bg-orange-100 text-orange-700" },
+  critical: { label: "Urgente", color: "bg-red-100 text-red-700" }
 };
 
 export default function TaskCard({ task, user, currentUser, onView, onEdit, onDelete, onStatusChange }) {
-  const status = statusConfig[task.status] || statusConfig.nao_iniciado;
-  const priority = priorityConfig[task.priority] || priorityConfig.media;
+  const status = statusConfig[task.status] || statusConfig.todo;
+  const priority = priorityConfig[task.priority] || priorityConfig.medium;
   const StatusIcon = status.icon;
 
   const getDueDateStatus = () => {
-    if (!task.due_date || task.status === "concluido") return null;
+    if (!task.due_date || task.status === "done") return null;
     
     const dueDate = new Date(task.due_date);
     if (isPast(dueDate) && !isToday(dueDate)) {
@@ -64,9 +64,9 @@ export default function TaskCard({ task, user, currentUser, onView, onEdit, onDe
 
   // Menu de mudança de status
   const statusOptions = [
-    { value: "nao_iniciado", label: "Não Iniciado", icon: Circle, color: "text-gray-500" },
-    { value: "em_progresso", label: "Em Progresso", icon: Clock, color: "text-blue-500" },
-    { value: "concluido", label: "Concluído", icon: CheckCircle2, color: "text-green-500" }
+    { value: "todo", label: "Não Iniciado", icon: Circle, color: "text-gray-500" },
+    { value: "in_progress", label: "Em Progresso", icon: Clock, color: "text-blue-500" },
+    { value: "done", label: "Concluído", icon: CheckCircle2, color: "text-green-500" }
   ];
 
   // Determinar ações rápidas disponíveis
@@ -80,28 +80,28 @@ export default function TaskCard({ task, user, currentUser, onView, onEdit, onDe
       return actions;
     }
 
-    if (task.status === 'nao_iniciado') {
+    if (task.status === 'todo') {
       actions.push({
         label: 'Iniciar',
-        action: () => onStatusChange('em_progresso'),
+        action: () => onStatusChange('in_progress'),
         icon: Clock,
         color: 'bg-blue-500 hover:bg-blue-600'
       });
     }
-    
-    if (task.status === 'em_progresso') {
+
+    if (task.status === 'in_progress') {
       actions.push({
         label: 'Concluir',
-        action: () => onStatusChange('concluido'),
+        action: () => onStatusChange('done'),
         icon: CheckCircle2,
         color: 'bg-green-500 hover:bg-green-600'
       });
     }
-    
-    if (task.status === 'concluido') {
+
+    if (task.status === 'done') {
       actions.push({
         label: 'Reabrir',
-        action: () => onStatusChange('em_progresso'),
+        action: () => onStatusChange('in_progress'),
         icon: Clock,
         color: 'bg-blue-500 hover:bg-blue-600'
       });

@@ -58,12 +58,12 @@ export default function GanttChart({ tasks, milestones, project }) {
 
   const getStatusColor = (status) => {
     const colors = {
-      nao_iniciado: "#9ca3af",
-      em_progresso: "#3b82f6",
-      concluido: "#10b981",
-      cancelado: "#ef4444"
+      todo: "#9ca3af",
+      in_progress: "#3b82f6",
+      done: "#10b981",
+      blocked: "#ef4444"
     };
-    return colors[status] || colors.nao_iniciado;
+    return colors[status] || colors.todo;
   };
 
   return (
@@ -120,7 +120,7 @@ export default function GanttChart({ tasks, milestones, project }) {
                       }}
                     >
                       <span className="text-xs text-white font-medium truncate px-2">
-                        {task.status === 'concluido' ? '✓' : ''}
+                        {task.status === 'done' ? '✓' : ''}
                       </span>
                     </div>
                   )}
@@ -166,15 +166,15 @@ export default function GanttChart({ tasks, milestones, project }) {
         {/* Legend */}
         <div className="flex gap-6 mt-6 pt-4 border-t border-gray-200 text-xs">
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded" style={{ backgroundColor: getStatusColor('nao_iniciado') }}></div>
+            <div className="w-4 h-4 rounded" style={{ backgroundColor: getStatusColor('todo') }}></div>
             <span className="text-gray-600">Não Iniciado</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded" style={{ backgroundColor: getStatusColor('em_progresso') }}></div>
+            <div className="w-4 h-4 rounded" style={{ backgroundColor: getStatusColor('in_progress') }}></div>
             <span className="text-gray-600">Em Progresso</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded" style={{ backgroundColor: getStatusColor('concluido') }}></div>
+            <div className="w-4 h-4 rounded" style={{ backgroundColor: getStatusColor('done') }}></div>
             <span className="text-gray-600">Concluído</span>
           </div>
           <div className="flex items-center gap-2">

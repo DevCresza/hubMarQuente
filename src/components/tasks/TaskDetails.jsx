@@ -39,7 +39,6 @@ export default function TaskDetails({ task, users, departments, collections, cur
   const status = statusConfig[task.status] || statusConfig.nao_iniciado;
   const priority = priorityConfig[task.priority] || priorityConfig.media;
   const assignedUser = users.find(u => u.id === task.assigned_to);
-  const createdByUser = users.find(u => u.id === task.created_by);
   const department = departments.find(d => d.id === task.department_id);
   const collection = collections.find(c => c.id === task.collection_id);
 
@@ -58,7 +57,7 @@ export default function TaskDetails({ task, users, departments, collections, cur
     t.dependencies && t.dependencies.includes(task.id)
   );
 
-  const canEdit = currentUser?.id === task.assigned_to || currentUser?.id === task.created_by || currentUser?.role === 'admin';
+  const canEdit = currentUser?.id === task.assigned_to || currentUser?.role === 'admin';
 
   // Opções de mudança de status
   const statusTransitions = {
@@ -353,17 +352,6 @@ export default function TaskDetails({ task, users, departments, collections, cur
                       </div>
                     </div>
                   )}
-                </div>
-              </div>
-            )}
-
-            {/* Criador */}
-            {createdByUser && (
-              <div className="bg-gray-100 rounded-2xl shadow-neumorphic p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Criado por</h3>
-                <div className="flex items-center gap-3">
-                  <User className="w-4 h-4 text-gray-500" />
-                  <p className="text-gray-700">{createdByUser.full_name}</p>
                 </div>
               </div>
             )}

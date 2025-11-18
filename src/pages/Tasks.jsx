@@ -73,10 +73,7 @@ export default function TasksPage() {
     if (editingTask) {
       await base44.entities.Task.update(editingTask.id, taskData);
     } else {
-      await base44.entities.Task.create({
-        ...taskData,
-        created_by: currentUser?.id
-      });
+      await base44.entities.Task.create(taskData);
     }
     setShowForm(false);
     setEditingTask(null);
@@ -212,9 +209,9 @@ export default function TasksPage() {
   const getFilteredTasks = () => {
     return tasks.filter(task => {
       if (filters.view === "minhas" && task.assigned_to !== currentUser?.id) return false;
-      if (filters.view === "atribuidas" && task.created_by !== currentUser?.id) return false;
+      // Removido filtro "atribuidas" por created_by pois a coluna não existe na tabela tasks
 
-      const searchMatch = 
+      const searchMatch =
         task.title?.toLowerCase().includes(filters.search.toLowerCase()) ||
         task.description?.toLowerCase().includes(filters.search.toLowerCase());
 

@@ -60,7 +60,7 @@ export default function TaskCard({ task, user, currentUser, onView, onEdit, onDe
   };
 
   const dueDateStatus = getDueDateStatus();
-  const canEdit = currentUser?.id === task.assigned_to || currentUser?.id === task.created_by || currentUser?.role === 'admin';
+  const canEdit = currentUser?.id === task.assigned_to || currentUser?.role === 'admin';
 
   // Menu de mudança de status
   const statusOptions = [

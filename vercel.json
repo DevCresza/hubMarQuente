@@ -7,6 +7,21 @@
   "installCommand": "npm install",
   "framework": "vite",
   "regions": ["gru1"],
+  "routes": [
+    {
+      "src": "/assets/(.*)",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
@@ -34,15 +49,6 @@
       ]
     },
     {
-      "source": "/assets/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
       "source": "/(favicon\\.svg|logo\\.svg|manifest\\.json)",
       "headers": [
         {
@@ -62,13 +68,5 @@
     "autoAlias": true,
     "silent": false,
     "autoJobCancelation": true
-  },
-  "cleanUrls": true,
-  "trailingSlash": false,
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ]
+  }
 }

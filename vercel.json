@@ -58,11 +58,6 @@
       ]
     }
   ],
-  "env": {
-    "VITE_SUPABASE_URL": "@supabase-url",
-    "VITE_SUPABASE_ANON_KEY": "@supabase-anon-key",
-    "VITE_SUPABASE_SERVICE_KEY": "@supabase-service-key"
-  },
   "github": {
     "enabled": true,
     "autoAlias": true,

@@ -1,4 +1,4 @@
-﻿# 🌊 Mar Quente HUB
+﻿# 🌊 Mar Quente HUB.
 
 > Sistema completo de gestão de projetos, tarefas, usuários e departamentos
 

@@ -51,9 +51,9 @@ export default function AssetDetails({ asset, collections, brands, users, curren
                 <Edit className="w-4 h-4 mr-2" />
                 Editar
               </Button>
-              {asset.file_url && (
+              {(asset.cover_url || asset.file_url) && (
                 <Button
-                  onClick={() => window.open(asset.file_url, '_blank')}
+                  onClick={() => window.open(asset.cover_url || asset.file_url, '_blank')}
                   className="bg-purple-500 hover:bg-purple-600 text-white shadow-neumorphic-soft hover:shadow-neumorphic-pressed transition-all duration-200"
                 >
                   <ExternalLink className="w-4 h-4 mr-2" />
@@ -85,19 +85,18 @@ export default function AssetDetails({ asset, collections, brands, users, curren
           </div>
 
           {/* Preview */}
-          {(asset.file_url || asset.thumbnail_url) && (
+          {(asset.cover_url || asset.file_url) && (
             <div className="bg-gray-100 rounded-2xl shadow-neumorphic-inset p-4 mb-6">
               <div className="max-w-2xl mx-auto">
                 {asset.type === 'video' || asset.type === 'reel' ? (
-                  <video 
-                    src={asset.file_url} 
-                    controls 
+                  <video
+                    src={asset.cover_url || asset.file_url}
+                    controls
                     className="w-full rounded-xl shadow-neumorphic-soft"
-                    poster={asset.thumbnail_url}
                   />
                 ) : (
                   <img
-                    src={asset.thumbnail_url || asset.file_url}
+                    src={asset.cover_url || asset.file_url}
                     alt={asset.name}
                     className="w-full rounded-xl shadow-neumorphic-soft"
                   />
@@ -180,14 +179,14 @@ export default function AssetDetails({ asset, collections, brands, users, curren
           </div>
 
           {/* Channels */}
-          {asset.channel && asset.channel.length > 0 && (
+          {asset.channels && asset.channels.length > 0 && (
             <div className="bg-gray-100 rounded-2xl p-4 shadow-neumorphic-inset mb-6">
               <div className="flex items-center gap-2 mb-3">
                 <Share2 className="w-5 h-5 text-gray-500" />
                 <h3 className="font-semibold text-gray-800">Canais de Publicação</h3>
               </div>
               <div className="flex gap-2 flex-wrap">
-                {asset.channel.map(channel => (
+                {asset.channels.map(channel => (
                   <span key={channel} className="px-3 py-1 bg-gray-100 rounded-lg text-sm font-semibold text-gray-700 shadow-neumorphic-soft capitalize">
                     {channel}
                   </span>

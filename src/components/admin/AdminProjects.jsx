@@ -46,13 +46,13 @@ export default function AdminProjects({ currentUser }) {
   }
 
   const getProjectAnalysis = (project) => {
-    const projectTasks = tasks.filter(t => t.project_id === project.id);
-    const completed = projectTasks.filter(t => t.status === 'concluido').length;
-    const inProgress = projectTasks.filter(t => t.status === 'em_progresso').length;
-    const notStarted = projectTasks.filter(t => t.status === 'nao_iniciado').length;
+    const projectTasks = tasks.filter(t => t.project === project.id);
+    const completed = projectTasks.filter(t => t.status === 'done').length;
+    const inProgress = projectTasks.filter(t => t.status === 'in_progress').length;
+    const notStarted = projectTasks.filter(t => t.status === 'todo').length;
     
     const overdue = projectTasks.filter(t => {
-      if (!t.due_date || t.status === 'concluido') return false;
+      if (!t.due_date || t.status === 'done') return false;
       return new Date(t.due_date) < new Date();
     }).length;
 
@@ -62,7 +62,7 @@ export default function AdminProjects({ currentUser }) {
       const taskDate = t.updated_date ? new Date(t.updated_date) : new Date(t.created_date);
       return taskDate > sevenDaysAgo;
     });
-    const isStalled = !recentActivity && projectTasks.length > 0 && project.status === 'ativo';
+    const isStalled = !recentActivity && projectTasks.length > 0 && project.status === 'in_progress';
 
     const completionRate = projectTasks.length ? Math.round((completed / projectTasks.length) * 100) : 0;
 
@@ -100,7 +100,7 @@ export default function AdminProjects({ currentUser }) {
   if (selectedProject) {
     const analysis = selectedProject.analysis;
     const owner = users.find(u => u.id === selectedProject.owner_id);
-    const projectTasks = tasks.filter(t => t.project_id === selectedProject.id);
+    const projectTasks = tasks.filter(t => t.project === selectedProject.id);
 
     return (
       <div className="space-y-6">
@@ -120,11 +120,17 @@ export default function AdminProjects({ currentUser }) {
               )}
             </div>
             <span className={`px-4 py-2 rounded-lg text-sm font-semibold ${
-              selectedProject.status === 'ativo' ? 'bg-green-100 text-green-700' :
-              selectedProject.status === 'em_espera' ? 'bg-yellow-100 text-yellow-700' :
+              selectedProject.status === 'in_progress' ? 'bg-green-100 text-green-700' :
+              selectedProject.status === 'on_hold' ? 'bg-yellow-100 text-yellow-700' :
+              selectedProject.status === 'completed' ? 'bg-blue-100 text-blue-700' :
               'bg-gray-100 text-gray-700'
             }`}>
-              {selectedProject.status}
+              {selectedProject.status === 'in_progress' ? 'Em Progresso' :
+               selectedProject.status === 'planning' ? 'Planejamento' :
+               selectedProject.status === 'on_hold' ? 'Em Espera' :
+               selectedProject.status === 'completed' ? 'Concluído' :
+               selectedProject.status === 'cancelled' ? 'Cancelado' :
+               selectedProject.status}
             </span>
           </div>
 
@@ -185,7 +191,7 @@ export default function AdminProjects({ currentUser }) {
             <h3 className="font-bold text-gray-800">Tarefas do Projeto</h3>
             {projectTasks.map(task => {
               const assignedUser = users.find(u => u.id === task.assigned_to);
-              const isOverdue = task.due_date && task.status !== 'concluido' && new Date(task.due_date) < new Date();
+              const isOverdue = task.due_date && task.status !== 'done' && new Date(task.due_date) < new Date();
 
               return (
                 <div key={task.id} className="p-4 bg-gray-100 rounded-xl shadow-neumorphic-inset">
@@ -206,12 +212,12 @@ export default function AdminProjects({ currentUser }) {
                       )}
                     </div>
                     <span className={`px-3 py-1 rounded-lg text-xs font-semibold ${
-                      task.status === 'concluido' ? 'bg-green-100 text-green-700' :
-                      task.status === 'em_progresso' ? 'bg-blue-100 text-blue-700' :
+                      task.status === 'done' ? 'bg-green-100 text-green-700' :
+                      task.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
                       'bg-gray-100 text-gray-600'
                     }`}>
-                      {task.status === 'concluido' ? 'Concluída' :
-                       task.status === 'em_progresso' ? 'Em Progresso' :
+                      {task.status === 'done' ? 'Concluída' :
+                       task.status === 'in_progress' ? 'Em Progresso' :
                        'Não Iniciada'}
                     </span>
                   </div>

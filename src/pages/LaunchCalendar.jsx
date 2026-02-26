@@ -117,8 +117,8 @@ export default function LaunchCalendarPage() {
   const getFilteredEvents = () => {
     return events.filter(event => {
       const typeMatch = filters.type === "all" || event.type === filters.type;
-      const collectionMatch = filters.collection === "all" || event.collection_id === filters.collection;
-      const departmentMatch = filters.department === "all" || event.department_id === filters.department;
+      const collectionMatch = filters.collection === "all" || event.collection === filters.collection;
+      const departmentMatch = filters.department === "all" || event.department === filters.department;
       const statusMatch = filters.status === "all" || event.status === filters.status;
 
       return typeMatch && collectionMatch && departmentMatch && statusMatch;

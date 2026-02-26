@@ -39,7 +39,7 @@ export default function TaskDetails({ task, users, departments, collections, cur
   const status = statusConfig[task.status] || statusConfig.todo;
   const priority = priorityConfig[task.priority] || priorityConfig.medium;
   const assignedUser = users.find(u => u.id === task.assigned_to);
-  const department = departments.find(d => d.id === task.department_id);
+  const department = departments.find(d => d.id === task.department);
 
   // Verificar se está atrasada
   const isOverdue = task.due_date && task.status !== 'done' && new Date(task.due_date) < new Date();

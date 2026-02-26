@@ -8,7 +8,6 @@ export default function AssetCard({ asset, collection, brand, viewMode, isSelect
       case 'video':
       case 'reel':
         return Video;
-      case 'foto':
       default:
         return Image;
     }
@@ -17,10 +16,13 @@ export default function AssetCard({ asset, collection, brand, viewMode, isSelect
   const getTypeColor = (type) => {
     const colors = {
       foto: "bg-blue-100 text-blue-700",
+      image: "bg-blue-100 text-blue-700",
       video: "bg-purple-100 text-purple-700",
       reel: "bg-pink-100 text-pink-700",
       story: "bg-orange-100 text-orange-700",
-      post: "bg-green-100 text-green-700"
+      post: "bg-green-100 text-green-700",
+      pdf: "bg-red-100 text-red-700",
+      design: "bg-teal-100 text-teal-700"
     };
     return colors[type] || "bg-gray-100 text-gray-700";
   };

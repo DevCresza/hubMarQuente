@@ -45,11 +45,11 @@ export default function AdminUsers({ currentUser }) {
     .filter(u => u.is_active)
     .map(user => {
       const userTasks = tasks.filter(t => t.assigned_to === user.id);
-      const completed = userTasks.filter(t => t.status === 'concluido').length;
-      const inProgress = userTasks.filter(t => t.status === 'em_progresso').length;
-      const notStarted = userTasks.filter(t => t.status === 'nao_iniciado').length;
+      const completed = userTasks.filter(t => t.status === 'done').length;
+      const inProgress = userTasks.filter(t => t.status === 'in_progress').length;
+      const notStarted = userTasks.filter(t => t.status === 'todo').length;
       const overdue = userTasks.filter(t => {
-        if (!t.due_date || t.status === 'concluido') return false;
+        if (!t.due_date || t.status === 'done') return false;
         return new Date(t.due_date) < new Date();
       }).length;
 

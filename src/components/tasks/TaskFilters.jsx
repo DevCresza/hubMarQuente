@@ -84,10 +84,10 @@ export default function TaskFilters({ filters, setFilters, users, currentUser, t
                 className="w-full px-4 py-2 bg-gray-100 shadow-neumorphic-inset border-none rounded-lg text-gray-700 text-sm"
               >
                 <option value="all">Todos</option>
-                <option value="nao_iniciado">Não Iniciado</option>
-                <option value="em_progresso">Em Progresso</option>
-                <option value="concluido">Concluído</option>
-                <option value="cancelado">Cancelado</option>
+                <option value="todo">Não Iniciado</option>
+                <option value="in_progress">Em Progresso</option>
+                <option value="done">Concluído</option>
+                <option value="blocked">Bloqueado</option>
               </select>
             </div>
 
@@ -100,10 +100,10 @@ export default function TaskFilters({ filters, setFilters, users, currentUser, t
                 className="w-full px-4 py-2 bg-gray-100 shadow-neumorphic-inset border-none rounded-lg text-gray-700 text-sm"
               >
                 <option value="all">Todas</option>
-                <option value="baixa">Baixa</option>
-                <option value="media">Média</option>
-                <option value="alta">Alta</option>
-                <option value="urgente">Urgente</option>
+                <option value="low">Baixa</option>
+                <option value="medium">Média</option>
+                <option value="high">Alta</option>
+                <option value="critical">Urgente</option>
               </select>
             </div>
 

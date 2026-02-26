@@ -149,7 +149,7 @@ export default function MarketingDirectoryPage() {
         asset.name?.toLowerCase().includes(filters.search.toLowerCase()) ||
         asset.description?.toLowerCase().includes(filters.search.toLowerCase());
 
-      const typeMatch = filters.type === "all" || asset.type === filters.type;
+      const typeMatch = filters.type === "all" || asset.type === filters.type || (filters.type === "foto" && asset.type === "image");
       const collectionMatch = filters.collection === "all" || asset.collection_id === filters.collection;
       const brandMatch = filters.brand === "all" || asset.brand_id === filters.brand;
       const statusMatch = filters.status === "all" || asset.status === filters.status;

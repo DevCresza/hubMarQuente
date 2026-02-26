@@ -62,14 +62,14 @@ export default function AdminOverview({ currentUser }) {
 
   // Cálculos de métricas
   const activeUsers = data.users.filter(u => u.is_active).length;
-  const activeProjects = data.projects.filter(p => p.status === 'ativo').length;
-  const completedTasks = data.tasks.filter(t => t.status === 'concluido').length;
+  const activeProjects = data.projects.filter(p => p.status === 'in_progress' || p.status === 'planning').length;
+  const completedTasks = data.tasks.filter(t => t.status === 'done').length;
   const totalTasks = data.tasks.length;
   const completionRate = totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
   // Tarefas com problemas - REMOVIDO blocked
   const overdueTasks = data.tasks.filter(t => {
-    if (!t.due_date || t.status === 'concluido') return false;
+    if (!t.due_date || t.status === 'done') return false;
     return new Date(t.due_date) < new Date();
   }).length;
 
@@ -78,8 +78,8 @@ export default function AdminOverview({ currentUser }) {
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
   const stalledProjects = data.projects.filter(p => {
-    if (p.status !== 'ativo') return false;
-    const projectTasks = data.tasks.filter(t => t.project_id === p.id);
+    if (p.status !== 'in_progress') return false;
+    const projectTasks = data.tasks.filter(t => t.project === p.id);
     if (projectTasks.length === 0) return false;
 
     const recentActivity = projectTasks.some(t => {
@@ -98,27 +98,27 @@ export default function AdminOverview({ currentUser }) {
 
   // Análise detalhada de projetos - REMOVIDO blocked da análise de problemas
   const projectsWithIssues = data.projects.filter(p => {
-    const projectTasks = data.tasks.filter(t => t.project_id === p.id);
+    const projectTasks = data.tasks.filter(t => t.project === p.id);
     const hasOverdue = projectTasks.some(t =>
-      t.due_date && t.status !== 'concluido' && new Date(t.due_date) < new Date()
+      t.due_date && t.status !== 'done' && new Date(t.due_date) < new Date()
     );
 
     const recentActivity = projectTasks.some(t => {
       const taskDate = t.updated_date ? new Date(t.updated_date) : new Date(t.created_date);
       return taskDate > sevenDaysAgo;
     });
-    const isStalled = !recentActivity && projectTasks.length > 0 && p.status === 'ativo';
+    const isStalled = !recentActivity && projectTasks.length > 0 && p.status === 'in_progress';
 
     return hasOverdue || isStalled;
   });
 
   const projectAnalysis = data.projects
-    .filter(p => p.status === 'ativo')
+    .filter(p => p.status === 'in_progress' || p.status === 'planning')
     .map(project => {
-      const projectTasks = data.tasks.filter(t => t.project_id === project.id);
-      const completed = projectTasks.filter(t => t.status === 'concluido').length;
+      const projectTasks = data.tasks.filter(t => t.project === project.id);
+      const completed = projectTasks.filter(t => t.status === 'done').length;
       const overdue = projectTasks.filter(t =>
-        t.due_date && t.status !== 'concluido' && new Date(t.due_date) < new Date()
+        t.due_date && t.status !== 'done' && new Date(t.due_date) < new Date()
       ).length;
 
       const recentActivity = projectTasks.some(t => {

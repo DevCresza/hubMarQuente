@@ -132,24 +132,6 @@ export default function Layout({ children, currentPageName }) {
   if (currentPageName === "SharedAssets") {
     return (
       <div className="min-h-screen bg-gray-100">
-        <style jsx>{`
-          .shadow-neumorphic {
-            box-shadow: 8px 8px 15px rgba(0, 0, 0, 0.1), 
-                       -8px -8px 15px rgba(255, 255, 255, 0.9);
-          }
-          .shadow-neumorphic-inset {
-            box-shadow: inset 6px 6px 10px rgba(0, 0, 0, 0.1),
-                       inset -6px -6px 10px rgba(255, 255, 255, 0.9);
-          }
-          .shadow-neumorphic-soft {
-            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.1),
-                       -4px -4px 8px rgba(255, 255, 255, 0.9);
-          }
-          .shadow-neumorphic-pressed {
-            box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.1),
-                       inset -4px -4px 8px rgba(255, 255, 255, 0.9);
-          }
-        `}</style>
         {children}
       </div>
     );
@@ -158,25 +140,6 @@ export default function Layout({ children, currentPageName }) {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gray-100 text-gray-800">
-        <style jsx>{`
-          .shadow-neumorphic {
-            box-shadow: 8px 8px 15px rgba(0, 0, 0, 0.1), 
-                       -8px -8px 15px rgba(255, 255, 255, 0.9);
-          }
-          .shadow-neumorphic-inset {
-            box-shadow: inset 6px 6px 10px rgba(0, 0, 0, 0.1),
-                       inset -6px -6px 10px rgba(255, 255, 255, 0.9);
-          }
-          .shadow-neumorphic-soft {
-            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.1),
-                       -4px -4px 8px rgba(255, 255, 255, 0.9);
-          }
-          .shadow-neumorphic-pressed {
-            box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.1),
-                       inset -4px -4px 8px rgba(255, 255, 255, 0.9);
-          }
-        `}</style>
-
         <Sidebar className="border-r border-gray-200 bg-gray-100 shadow-neumorphic">
           <SidebarHeader className="p-6">
             <div className="bg-gray-100 rounded-2xl p-4 border border-gray-200 shadow-neumorphic">
@@ -263,8 +226,9 @@ export default function Layout({ children, currentPageName }) {
                       {currentUser.full_name}
                     </p>
                     <p className="text-xs text-gray-500 truncate">
-                      {currentUser.role === 'admin' ? 'Administrador' : 
-                       currentUser.role === 'manager' ? 'Gerente' : 
+                      {currentUser.role === 'admin' ? 'Administrador' :
+                       currentUser.role === 'manager' ? 'Gerente' :
+                       currentUser.role === 'membro' ? (currentUser.position || 'Membro') :
                        currentUser.position || currentUser.email}
                     </p>
                   </div>

@@ -390,7 +390,7 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {getActiveProjects().length > 0 ? (
               getActiveProjects().map(project => {
-                const owner = users.find(u => u.id === project.owner);
+                const owner = users.find(u => u.id === project.owner_id);
                 const projectTasks = tasks.filter(t => t.project === project.id);
                 const completedTasks = projectTasks.filter(t => t.status === 'done');
                 const progress = projectTasks.length 
@@ -464,15 +464,9 @@ export default function Dashboard() {
             task={selectedTask}
             users={users}
             allTasks={tasks}
-            sections={[
-              { id: "section-1", name: "A Fazer" },
-              { id: "section-2", name: "Em Andamento" },
-              { id: "section-3", name: "Concluído" }
-            ]}
             onClose={() => setSelectedTask(null)}
-            onUpdate={(updates) => handleUpdateTask(selectedTask.id, updates)}
+            onEdit={() => setSelectedTask(null)}
             onDelete={() => handleDeleteTask(selectedTask.id)}
-            onView={() => {}}
           />
         )}
       </div>

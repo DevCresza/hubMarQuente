@@ -24,13 +24,17 @@ import {
 
 export default function UserCard({ user, department, tasks, onEdit, onToggleStatus, canEdit }) {
   const getTaskStatusCounts = () => {
-    const counts = { concluido: 0, em_progresso: 0, nao_iniciado: 0 };
-    tasks.forEach(task => counts[task.status]++);
+    const counts = { done: 0, in_progress: 0, todo: 0 };
+    tasks.forEach(task => {
+      if (counts.hasOwnProperty(task.status)) {
+        counts[task.status]++;
+      }
+    });
     return counts;
   };
 
   const statusCounts = getTaskStatusCounts();
-  const completionRate = tasks.length ? Math.round((statusCounts.concluido / tasks.length) * 100) : 0;
+  const completionRate = tasks.length ? Math.round((statusCounts.done / tasks.length) * 100) : 0;
 
   const getInitials = (name) => {
     return name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || '??';
@@ -171,15 +175,15 @@ export default function UserCard({ user, department, tasks, onEdit, onToggleStat
             <div className="flex justify-between text-xs">
               <div className="flex items-center gap-1">
                 <CheckCircle className="w-3 h-3 text-green-500" />
-                <span className="font-medium text-gray-600">{statusCounts.concluido}</span>
+                <span className="font-medium text-gray-600">{statusCounts.done}</span>
               </div>
               <div className="flex items-center gap-1">
                 <Clock className="w-3 h-3 text-blue-500" />
-                <span className="font-medium text-gray-600">{statusCounts.em_progresso}</span>
+                <span className="font-medium text-gray-600">{statusCounts.in_progress}</span>
               </div>
               <div className="flex items-center gap-1">
                 <Circle className="w-3 h-3 text-gray-400" />
-                <span className="font-medium text-gray-600">{statusCounts.nao_iniciado}</span>
+                <span className="font-medium text-gray-600">{statusCounts.todo}</span>
               </div>
             </div>
           </>

@@ -74,18 +74,18 @@ export default function TaskList({ category, categoryKey, tasks, onBack, onTaskU
 
   const getStatusCounts = () => {
     const counts = {
-      nao_iniciado: 0,
-      em_progresso: 0,
-      concluido: 0
+      todo: 0,
+      in_progress: 0,
+      done: 0
     };
     localTasks.forEach(task => {
-      counts[task.status]++;
+      if (counts[task.status] !== undefined) counts[task.status]++;
     });
     return counts;
   };
 
   const statusCounts = getStatusCounts();
-  const progress = localTasks.length ? Math.round((statusCounts.concluido / localTasks.length) * 100) : 0;
+  const progress = localTasks.length ? Math.round((statusCounts.done / localTasks.length) * 100) : 0;
 
   const filteredTasks = localTasks.filter(task => {
     const responsibleMatch = filter.responsible === 'all' || task.assigned_to === filter.responsible;
@@ -138,9 +138,9 @@ export default function TaskList({ category, categoryKey, tasks, onBack, onTaskU
                 style={{ backgroundPosition: 'right 0.75rem center', backgroundRepeat: 'no-repeat', backgroundSize: '0.65em auto, 100%', backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 16 16\'%3e%3cpath fill=\'none\' stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'m2 6 6 6 6-6\'/%3e%3c/svg%3e")' }}
               >
                 <option value="all">Todos os status</option>
-                <option value="nao_iniciado">Não Iniciado</option>
-                <option value="em_progresso">Em Progresso</option>
-                <option value="concluido">Concluído</option>
+                <option value="todo">Não Iniciado</option>
+                <option value="in_progress">Em Progresso</option>
+                <option value="done">Concluído</option>
               </select>
             </div>
           </div>
@@ -157,15 +157,15 @@ export default function TaskList({ category, categoryKey, tasks, onBack, onTaskU
         {/* Status Summary */}
         <div className="grid grid-cols-3 gap-6 mt-6">
           <div className="text-center p-4 bg-gray-100 rounded-2xl shadow-neumorphic-inset">
-            <div className="text-2xl font-semibold text-gray-700">{statusCounts.nao_iniciado}</div>
+            <div className="text-2xl font-semibold text-gray-700">{statusCounts.todo}</div>
             <div className="text-sm text-gray-500">Não Iniciadas</div>
           </div>
           <div className="text-center p-4 bg-gray-100 rounded-2xl shadow-neumorphic-inset">
-            <div className="text-2xl font-semibold text-blue-600">{statusCounts.em_progresso}</div>
+            <div className="text-2xl font-semibold text-blue-600">{statusCounts.in_progress}</div>
             <div className="text-sm text-gray-500">Em Progresso</div>
           </div>
           <div className="text-center p-4 bg-gray-100 rounded-2xl shadow-neumorphic-inset">
-            <div className="text-2xl font-semibold text-green-600">{statusCounts.concluido}</div>
+            <div className="text-2xl font-semibold text-green-600">{statusCounts.done}</div>
             <div className="text-sm text-gray-500">Concluídas</div>
           </div>
         </div>

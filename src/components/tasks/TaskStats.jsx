@@ -3,13 +3,13 @@ import { CheckCircle, Clock, AlertCircle, TrendingUp } from "lucide-react";
 
 export default function TaskStats({ tasks, currentUser }) {
   const myTasks = tasks.filter(t => t.assigned_to === currentUser?.id);
-  const completed = tasks.filter(t => t.status === "concluido").length;
-  const inProgress = tasks.filter(t => t.status === "em_progresso").length;
+  const completed = tasks.filter(t => t.status === "done").length;
+  const inProgress = tasks.filter(t => t.status === "in_progress").length;
   const overdue = tasks.filter(t => {
-    if (t.status === "concluido" || !t.due_date) return false;
+    if (t.status === "done" || !t.due_date) return false;
     return new Date(t.due_date) < new Date();
   }).length;
-  const myCompleted = myTasks.filter(t => t.status === "concluido").length;
+  const myCompleted = myTasks.filter(t => t.status === "done").length;
   const myCompletionRate = myTasks.length ? Math.round((myCompleted / myTasks.length) * 100) : 0;
 
   const statsData = [
@@ -25,7 +25,7 @@ export default function TaskStats({ tasks, currentUser }) {
       icon: Clock,
       title: "Em Progresso",
       value: inProgress,
-      subtitle: `${myTasks.filter(t => t.status === "em_progresso").length} suas`,
+      subtitle: `${myTasks.filter(t => t.status === "in_progress").length} suas`,
       color: "text-blue-500",
       bgColor: "bg-blue-50"
     },

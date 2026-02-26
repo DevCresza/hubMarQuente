@@ -201,6 +201,15 @@ export const createMockClient = () => {
       }
       mockData.users.splice(index, 1);
       return { success: true };
+    },
+
+    // Aliases para compatibilidade com código existente
+    async update(id, updates) {
+      return this.updateUser(id, updates);
+    },
+
+    async create(userData) {
+      return this.createUser(userData);
     }
   };
 

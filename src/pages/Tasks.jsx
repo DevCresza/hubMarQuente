@@ -70,14 +70,19 @@ export default function TasksPage() {
   };
 
   const handleSaveTask = async (taskData) => {
-    if (editingTask) {
-      await base44.entities.Task.update(editingTask.id, taskData);
-    } else {
-      await base44.entities.Task.create(taskData);
+    try {
+      if (editingTask) {
+        await base44.entities.Task.update(editingTask.id, taskData);
+      } else {
+        await base44.entities.Task.create(taskData);
+      }
+      setShowForm(false);
+      setEditingTask(null);
+      loadData();
+    } catch (error) {
+      console.error("Erro ao salvar tarefa:", error);
+      alert("Erro ao salvar tarefa: " + (error.message || "Tente novamente."));
     }
-    setShowForm(false);
-    setEditingTask(null);
-    loadData();
   };
 
   const handleEditTask = (task) => {
@@ -102,18 +107,15 @@ export default function TasksPage() {
 
       console.log("Alterando status de", task.status, "para", newStatus);
 
-      const updatedTask = {
-        ...task,
-        status: newStatus
-      };
+      const updates = { status: newStatus };
 
       if (newStatus === "done") {
-        updatedTask.completed_date = new Date().toISOString().split('T')[0];
+        updates.completed_date = new Date().toISOString().split('T')[0];
       } else if (newStatus !== "done" && task.completed_date) {
-        updatedTask.completed_date = null;
+        updates.completed_date = null;
       }
-      
-      await base44.entities.Task.update(taskId, updatedTask);
+
+      await base44.entities.Task.update(taskId, updates);
       console.log("Tarefa atualizada com sucesso");
       
       await loadData();
@@ -140,7 +142,7 @@ export default function TasksPage() {
   // Calcular estatísticas para gamificação
   const getCompletionStats = () => {
     const myTasks = tasks.filter(t => t.assigned_to === currentUser?.id);
-    const completedTasks = myTasks.filter(t => t.status === 'concluido');
+    const completedTasks = myTasks.filter(t => t.status === 'done');
     
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -407,19 +409,19 @@ export default function TasksPage() {
                     <div 
                       className="flex items-center gap-3 mb-4"
                       onDoubleClick={() => {
-                        if (group.id === 'nao_iniciado') {
+                        if (group.id === 'todo') {
                           setShowForm(true);
                         }
                       }}
-                      style={{ cursor: group.id === 'nao_iniciado' ? 'pointer' : 'default' }}
-                      title={group.id === 'nao_iniciado' ? 'Duplo clique para criar nova tarefa' : ''}
+                      style={{ cursor: group.id === 'todo' ? 'pointer' : 'default' }}
+                      title={group.id === 'todo' ? 'Duplo clique para criar nova tarefa' : ''}
                     >
                       <div className={`w-3 h-3 rounded-full bg-${group.color}-500`}></div>
                       <h3 className="font-semibold text-gray-800 text-lg">{group.label}</h3>
                       <span className={`px-3 py-1 rounded-full text-sm font-semibold ${group.bgColor} text-${group.color}-700`}>
                         {groupTasks.length}
                       </span>
-                      {group.id === 'nao_iniciado' && (
+                      {group.id === 'todo' && (
                         <span className="text-xs text-gray-500 ml-2">
                           (duplo clique para criar tarefa)
                         </span>
@@ -430,7 +432,7 @@ export default function TasksPage() {
                     <div className="space-y-3">
                       {groupTasks.map(task => {
                         const assignedUser = users.find(u => u.id === task.assigned_to);
-                        const isOverdue = task.due_date && task.status !== 'concluido' && new Date(task.due_date) < new Date();
+                        const isOverdue = task.due_date && task.status !== 'done' && new Date(task.due_date) < new Date();
                         
                         return (
                           <div 
@@ -441,9 +443,9 @@ export default function TasksPage() {
                             <div className="flex items-center gap-4">
                               {/* Status Icon */}
                               <div className={`w-10 h-10 rounded-xl ${group.bgColor} flex items-center justify-center flex-shrink-0`}>
-                                {group.id === 'nao_iniciado' && <Circle className={`w-5 h-5 text-${group.color}-600`} />}
-                                {group.id === 'em_progresso' && <Clock className={`w-5 h-5 text-${group.color}-600`} />}
-                                {group.id === 'concluido' && <CheckCircle2 className={`w-5 h-5 text-${group.color}-600`} />}
+                                {group.id === 'todo' && <Circle className={`w-5 h-5 text-${group.color}-600`} />}
+                                {group.id === 'in_progress' && <Clock className={`w-5 h-5 text-${group.color}-600`} />}
+                                {group.id === 'done' && <CheckCircle2 className={`w-5 h-5 text-${group.color}-600`} />}
                               </div>
 
                               {/* Task Info */}
@@ -462,7 +464,7 @@ export default function TasksPage() {
                                       <span>{format(new Date(task.due_date), "dd/MM")}</span>
                                     </div>
                                   )}
-                                  {task.priority === 'urgente' && (
+                                  {task.priority === 'critical' && (
                                     <span className="px-2 py-0.5 rounded text-xs font-semibold bg-red-100 text-red-700">
                                       Urgente
                                     </span>
@@ -472,42 +474,42 @@ export default function TasksPage() {
 
                               {/* Quick Actions */}
                               <div className="flex gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-                                {group.id === 'nao_iniciado' && (
+                                {group.id === 'todo' && (
                                   <Button
                                     size="sm"
                                     className="bg-blue-500 hover:bg-blue-600 text-white shadow-neumorphic-soft"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      handleStatusChange(task.id, 'em_progresso');
+                                      handleStatusChange(task.id, 'in_progress');
                                     }}
                                   >
                                     <Clock className="w-4 h-4 mr-1" />
                                     Iniciar
                                   </Button>
                                 )}
-                                
-                                {group.id === 'em_progresso' && (
+
+                                {group.id === 'in_progress' && (
                                   <Button
                                     size="sm"
                                     className="bg-green-500 hover:bg-green-600 text-white shadow-neumorphic-soft"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      handleStatusChange(task.id, 'concluido');
+                                      handleStatusChange(task.id, 'done');
                                     }}
                                   >
                                     <CheckCircle2 className="w-4 h-4 mr-1" />
                                     Concluir
                                   </Button>
                                 )}
-                                
-                                {group.id === 'concluido' && (
+
+                                {group.id === 'done' && (
                                   <Button
                                     size="sm"
                                     variant="outline"
                                     className="shadow-neumorphic-soft bg-gray-100"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      handleStatusChange(task.id, 'em_progresso');
+                                      handleStatusChange(task.id, 'in_progress');
                                     }}
                                   >
                                     <Clock className="w-4 h-4 mr-1" />
@@ -536,14 +538,14 @@ export default function TasksPage() {
                         <div 
                           className="text-center py-8 text-gray-400 text-sm bg-gray-100 rounded-xl shadow-neumorphic-inset"
                           onDoubleClick={() => {
-                            if (group.id === 'nao_iniciado') {
+                            if (group.id === 'todo') {
                               setShowForm(true);
                             }
                           }}
-                          style={{ cursor: group.id === 'nao_iniciado' ? 'pointer' : 'default' }}
+                          style={{ cursor: group.id === 'todo' ? 'pointer' : 'default' }}
                         >
                           Nenhuma tarefa {group.label.toLowerCase()}
-                          {group.id === 'nao_iniciado' && (
+                          {group.id === 'todo' && (
                             <div className="mt-2 text-xs text-gray-500">
                               Duplo clique para criar uma nova tarefa
                             </div>

@@ -109,7 +109,7 @@ export default function ProjectsPage() {
 
         if (filters.issues === "atrasadas") {
           const hasOverdue = projectTasks.some(t =>
-            t.due_date && t.status !== 'concluido' && new Date(t.due_date) < new Date()
+            t.due_date && t.status !== 'done' && new Date(t.due_date) < new Date()
           );
           issuesMatch = hasOverdue;
         } else if (filters.issues === "bloqueadas") {
@@ -118,7 +118,7 @@ export default function ProjectsPage() {
             // Check if any of the dependencies are not yet completed
             return t.dependencies.some(depId => {
               const dependentTask = projectTasks.find(dt => dt.id === depId);
-              return dependentTask && dependentTask.status !== 'concluido';
+              return dependentTask && dependentTask.status !== 'done';
             });
           });
           issuesMatch = hasBlocked;

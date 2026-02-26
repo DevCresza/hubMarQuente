@@ -6,7 +6,7 @@ export default function UserStats({ users, departments, tasks, currentUser }) {
   const activeUsers = users.filter(u => u.is_active);
   const inactiveUsers = users.filter(u => !u.is_active);
   const usersWithTasks = users.filter(u => tasks.some(t => t.assigned_to === u.id));
-  const completedTasks = tasks.filter(t => t.status === 'concluido');
+  const completedTasks = tasks.filter(t => t.status === 'done');
   const totalTasks = tasks.length;
   
   const overallProgress = totalTasks ? Math.round((completedTasks.length / totalTasks) * 100) : 0;

@@ -3,9 +3,9 @@ import { Image, Video, CheckCircle, Eye } from "lucide-react";
 
 export default function AssetStats({ assets }) {
   const totalAssets = assets.length;
-  const photos = assets.filter(a => a.type === 'foto').length;
+  const photos = assets.filter(a => a.type === 'foto' || a.type === 'image' || a.type === 'story' || a.type === 'post').length;
   const videos = assets.filter(a => a.type === 'video' || a.type === 'reel').length;
-  const approved = assets.filter(a => a.status === 'aprovado' || a.status === 'publicado').length;
+  const approved = assets.filter(a => a.status === 'aprovado' || a.status === 'publicado' || a.status === 'approved' || a.status === 'published').length;
 
   const stats = [
     {

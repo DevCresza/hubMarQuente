@@ -58,7 +58,7 @@ export default function UserFilters({ filters, setFilters, departments, userCoun
           <option value="all">Todos os papéis</option>
           <option value="admin">Administradores</option>
           <option value="manager">Gerentes</option>
-          <option value="user">Usuários</option>
+          <option value="membro">Usuários</option>
         </select>
       </div>
 

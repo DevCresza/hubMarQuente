@@ -61,7 +61,7 @@ export default function AdminTasks({ currentUser }) {
 
       let problemMatch = true;
       if (filters.problem === "overdue") {
-        problemMatch = task.due_date && task.status !== 'concluido' && new Date(task.due_date) < new Date();
+        problemMatch = task.due_date && task.status !== 'done' && new Date(task.due_date) < new Date();
       } else if (filters.problem === "no_estimate") {
         problemMatch = !task.estimated_hours;
       }
@@ -99,9 +99,9 @@ export default function AdminTasks({ currentUser }) {
             className="px-4 py-2 bg-gray-100 shadow-neumorphic-inset border-none rounded-lg text-gray-700"
           >
             <option value="all">Todos os Status</option>
-            <option value="nao_iniciado">Não Iniciado</option>
-            <option value="em_progresso">Em Progresso</option>
-            <option value="concluido">Concluído</option>
+            <option value="todo">Não Iniciado</option>
+            <option value="in_progress">Em Progresso</option>
+            <option value="done">Concluído</option>
           </select>
 
           <select
@@ -131,8 +131,8 @@ export default function AdminTasks({ currentUser }) {
       <div className="space-y-4">
         {filteredTasks.map(task => {
           const assignedUser = users.find(u => u.id === task.assigned_to);
-          const project = projects.find(p => p.id === task.project_id);
-          const isOverdue = task.due_date && task.status !== 'concluido' && new Date(task.due_date) < new Date();
+          const project = projects.find(p => p.id === task.project);
+          const isOverdue = task.due_date && task.status !== 'done' && new Date(task.due_date) < new Date();
           const timeVariance = task.estimated_hours && task.actual_hours
             ? Math.round(((task.actual_hours - task.estimated_hours) / task.estimated_hours) * 100)
             : null;
@@ -171,12 +171,12 @@ export default function AdminTasks({ currentUser }) {
                   </div>
                 </div>
                 <span className={`px-3 py-1 rounded-lg text-xs font-semibold ${
-                  task.status === 'concluido' ? 'bg-green-100 text-green-700' :
-                  task.status === 'em_progresso' ? 'bg-blue-100 text-blue-700' :
+                  task.status === 'done' ? 'bg-green-100 text-green-700' :
+                  task.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
                   'bg-gray-200 text-gray-700'
                 }`}>
-                  {task.status === 'concluido' ? 'Concluída' :
-                   task.status === 'em_progresso' ? 'Em Progresso' :
+                  {task.status === 'done' ? 'Concluída' :
+                   task.status === 'in_progress' ? 'Em Progresso' :
                    'Não Iniciada'}
                 </span>
               </div>

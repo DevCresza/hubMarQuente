@@ -27,17 +27,17 @@ export default function TaskItem({ task, index, users, onStatusUpdate, onAssignm
   const assignedUser = users.find(u => u.id === task.assigned_to);
 
   const statusConfig = {
-    nao_iniciado: {
+    todo: {
       label: "Não Iniciado",
       icon: <Circle className="w-4 h-4 text-gray-400" />,
       color: "text-gray-500"
     },
-    em_progresso: {
+    in_progress: {
       label: "Em Progresso",
       icon: <Clock className="w-4 h-4 text-blue-500" />,
       color: "text-blue-500"
     },
-    concluido: {
+    done: {
       label: "Concluído",
       icon: <CheckCircle className="w-4 h-4 text-green-500" />,
       color: "text-green-500"
@@ -45,14 +45,14 @@ export default function TaskItem({ task, index, users, onStatusUpdate, onAssignm
   };
 
   const priorityConfig = {
-    baixa: { label: "Baixa", color: "bg-blue-100 text-blue-700" },
-    media: { label: "Média", color: "bg-yellow-100 text-yellow-700" },
-    alta: { label: "Alta", color: "bg-orange-100 text-orange-700" },
-    critica: { label: "Crítica", color: "bg-red-100 text-red-700" }
+    low: { label: "Baixa", color: "bg-blue-100 text-blue-700" },
+    medium: { label: "Média", color: "bg-yellow-100 text-yellow-700" },
+    high: { label: "Alta", color: "bg-orange-100 text-orange-700" },
+    critical: { label: "Crítica", color: "bg-red-100 text-red-700" }
   };
 
-  const currentStatus = statusConfig[task.status] || statusConfig.nao_iniciado;
-  const currentPriority = priorityConfig[task.priority] || priorityConfig.media;
+  const currentStatus = statusConfig[task.status] || statusConfig.todo;
+  const currentPriority = priorityConfig[task.priority] || priorityConfig.medium;
   
   const handleDateSelect = (date) => {
     onDateUpdate(task.id, date.toISOString().split('T')[0]);
@@ -67,7 +67,7 @@ export default function TaskItem({ task, index, users, onStatusUpdate, onAssignm
     <div className={`
       bg-gray-100 rounded-2xl p-5 shadow-neumorphic
       transition-all duration-300
-      ${task.status === "concluido" ? "opacity-60" : "hover:shadow-neumorphic-pressed"}
+      ${task.status === "done" ? "opacity-60" : "hover:shadow-neumorphic-pressed"}
     `}>
       <div className="flex items-start justify-between">
         {/* Title and Status */}
@@ -77,19 +77,19 @@ export default function TaskItem({ task, index, users, onStatusUpdate, onAssignm
               <button className="mt-1">{currentStatus.icon}</button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="bg-gray-100 shadow-neumorphic border-none">
-              <DropdownMenuItem onClick={() => handleStatusChange("nao_iniciado")}>
+              <DropdownMenuItem onClick={() => handleStatusChange("todo")}>
                 <Circle className="w-4 h-4 mr-2 text-gray-400" /> Não Iniciado
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleStatusChange("em_progresso")}>
+              <DropdownMenuItem onClick={() => handleStatusChange("in_progress")}>
                 <Clock className="w-4 h-4 mr-2 text-blue-500" /> Em Progresso
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleStatusChange("concluido")}>
+              <DropdownMenuItem onClick={() => handleStatusChange("done")}>
                 <CheckCircle className="w-4 h-4 mr-2 text-green-500" /> Concluído
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           <div className="flex-1">
-            <p className={`font-medium text-gray-800 ${task.status === "concluido" ? "line-through" : ""}`}>
+            <p className={`font-medium text-gray-800 ${task.status === "done" ? "line-through" : ""}`}>
               {task.title}
             </p>
             {task.description && (

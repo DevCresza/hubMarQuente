@@ -98,7 +98,7 @@ export default function CollectionCard({ collection, stylist, styles, onView, on
               ></div>
             </div>
             <p className="text-sm text-gray-700">
-              R$ {totalInvested?.toLocaleString()} / R$ {collection.budget?.toLocaleString()}
+              R$ {(totalInvested || 0).toLocaleString()} / R$ {(collection.budget || 0).toLocaleString()}
             </p>
             {collection.investments && collection.investments.length > 0 && (
               <p className="text-xs text-gray-500 mt-1">

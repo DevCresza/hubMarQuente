@@ -67,8 +67,9 @@ export default function Register() {
           id: authData.user.id,
           email: formData.email,
           full_name: formData.fullName,
-          role: 'admin', // Primeiro usuário será admin
-          password_hash: 'managed_by_supabase_auth', // Placeholder
+          role: 'membro',
+          is_active: true,
+          created_date: new Date().toISOString(),
         });
 
       if (userError) {

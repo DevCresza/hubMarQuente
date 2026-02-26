@@ -10,7 +10,9 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 // Cliente normal para uso geral
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = (supabaseUrl && supabaseAnonKey)
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : null;
 
 // Cliente admin para operações administrativas (criar usuários, etc)
 export const supabaseAdmin = supabaseServiceKey
@@ -21,21 +23,6 @@ export const supabaseAdmin = supabaseServiceKey
       }
     })
   : null;
-
-// Função auxiliar para converter snake_case para camelCase (opcional)
-const toCamelCase = (obj) => {
-  if (Array.isArray(obj)) {
-    return obj.map(item => toCamelCase(item));
-  }
-  if (obj !== null && typeof obj === 'object') {
-    return Object.keys(obj).reduce((acc, key) => {
-      const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
-      acc[camelKey] = toCamelCase(obj[key]);
-      return acc;
-    }, {});
-  }
-  return obj;
-};
 
 // Adapter para manter mesma interface do mockClient
 class SupabaseEntity {
@@ -196,8 +183,8 @@ export const createSupabaseClient = () => ({
         return {
           id: user.id,
           email: user.email,
-          name: user.user_metadata?.name || '',
-          role: user.user_metadata?.role || 'user',
+          name: user.user_metadata?.full_name || '',
+          role: user.user_metadata?.role || 'membro',
         };
       }
 

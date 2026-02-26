@@ -330,7 +330,7 @@ export default function ProjectForm({ project, users, departments, currentUser, 
                       onClick={handleAddTag}
                       className="bg-blue-500 hover:bg-blue-600 text-white px-6"
                     >
-                      Add
+                      Adicionar
                     </Button>
                   </div>
                   <div className="flex gap-2 flex-wrap">

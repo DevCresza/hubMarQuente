@@ -1,5 +1,4 @@
 import React from "react";
-import { format } from "date-fns";
 import { Edit, UserCheck, UserX, Mail, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,7 +18,7 @@ export default function UserTable({ users, departments, tasks, onEdit, onToggleS
 
   const getUserTasks = (userId) => {
     const userTasks = tasks.filter(task => task.assigned_to === userId);
-    const completed = userTasks.filter(t => t.status === 'concluido').length;
+    const completed = userTasks.filter(t => t.status === 'done').length;
     return { total: userTasks.length, completed };
   };
 

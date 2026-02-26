@@ -47,7 +47,7 @@ export default function CollectionForm({ collection, stylists, styles, onSave, o
     photoshoot_date: collection?.photoshoot_date ? new Date(collection.photoshoot_date) : null,
     campaign_start: collection?.campaign_start ? new Date(collection.campaign_start) : null,
 
-    status: collection?.status || "planning",
+    status: collection?.status || "conceito",
 
     budget: collection?.budget || 0,
     investments: collection?.investments || [],
@@ -83,7 +83,7 @@ export default function CollectionForm({ collection, stylists, styles, onSave, o
         photoshoot_date: collection.photoshoot_date ? new Date(collection.photoshoot_date) : null,
         campaign_start: collection.campaign_start ? new Date(collection.campaign_start) : null,
 
-        status: collection.status || "planning",
+        status: collection.status || "conceito",
 
         budget: collection.budget || 0,
         investments: collection.investments || [],
@@ -219,10 +219,14 @@ export default function CollectionForm({ collection, stylists, styles, onSave, o
                   <CustomInput type="number" label="Ano" value={formData.year} onChange={(e) => setFormData({...formData, year: e.target.value})} placeholder="2024" />
                   <CustomInput type="number" label="Quantidade de Peças" value={formData.piece_count} onChange={(e) => setFormData({...formData, piece_count: e.target.value})} placeholder="0" />
                   <CustomSelect label="Status" value={formData.status} onChange={(e) => setFormData({...formData, status: e.target.value})}>
-                    <option value="planning">Planejamento</option>
-                    <option value="active">Ativo</option>
-                    <option value="completed">Concluído</option>
-                    <option value="archived">Arquivado</option>
+                    <option value="conceito">Conceito</option>
+                    <option value="planejamento">Planejamento</option>
+                    <option value="desenvolvimento">Desenvolvimento</option>
+                    <option value="producao">Produção</option>
+                    <option value="fotografia">Fotografia</option>
+                    <option value="campanha">Campanha</option>
+                    <option value="lancado">Lançado</option>
+                    <option value="arquivado">Arquivado</option>
                   </CustomSelect>
                 </div>
               </div>

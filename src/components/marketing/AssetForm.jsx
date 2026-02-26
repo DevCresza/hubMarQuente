@@ -7,40 +7,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { X, Image, Plus } from "lucide-react";
 
 export default function AssetForm({ asset, collections, brands, users, currentUser, onSave, onCancel }) {
-  // Mapeamento reverso para edição
-  const reverseTypeMapping = {
-    'image': 'foto',
-    'video': 'video',
-    'pdf': 'lookbook',
-    'design': 'outro'
-  };
-
-  const reverseCategoryMapping = {
-    'web': 'campanha',
-    'social': 'produto',
-    'print': 'editorial',
-    'email': 'campanha'
-  };
-
-  const reverseStatusMapping = {
-    'draft': 'rascunho',
-    'in_review': 'em_revisao',
-    'approved': 'aprovado',
-    'published': 'publicado',
-    'archived': 'arquivado'
-  };
-
   const [formData, setFormData] = useState({
     title: asset?.name || asset?.title || "",
     description: asset?.description || "",
-    type: asset?.format || reverseTypeMapping[asset?.type] || "foto",
+    type: asset?.type || "foto",
     collection_id: asset?.collection_id || "",
     brand_id: asset?.brand_id || "",
     cover_url: asset?.cover_url || asset?.file_url || "",
     file_links: asset?.file_links || [],
-    category: reverseCategoryMapping[asset?.category] || "campanha",
-    channel: asset?.channels || asset?.channel || [],
-    status: reverseStatusMapping[asset?.status] || "rascunho",
+    category: asset?.category || "campanha",
+    channels: asset?.channels || asset?.channel || [],
+    status: asset?.status || "rascunho",
     tags: asset?.tags || []
   });
 
@@ -50,49 +27,19 @@ export default function AssetForm({ asset, collections, brands, users, currentUs
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Mapear campos do formulário para a estrutura do banco de dados
-    const typeMapping = {
-      'foto': 'image',
-      'video': 'video',
-      'reel': 'video',
-      'story': 'image',
-      'post': 'image',
-      'banner': 'image',
-      'lookbook': 'pdf',
-      'catalog': 'pdf',
-      'outro': 'design'
-    };
-
-    const categoryMapping = {
-      'campanha': 'web',
-      'produto': 'social',
-      'lifestyle': 'social',
-      'evento': 'web',
-      'editorial': 'print',
-      'ugc': 'social',
-      'outro': 'web'
-    };
-
-    const statusMapping = {
-      'rascunho': 'draft',
-      'em_revisao': 'in_review',
-      'aprovado': 'approved',
-      'publicado': 'published',
-      'arquivado': 'archived'
-    };
-
+    // Salvar valores diretamente (DB aceita valores em português)
     const dataToSave = {
-      name: formData.title, // title → name
+      name: formData.title,
       description: formData.description || null,
-      type: typeMapping[formData.type] || 'image',
-      category: categoryMapping[formData.category] || 'web',
-      file_url: formData.cover_url || null, // cover_url → file_url (nullable)
-      file_size: 0, // Placeholder
-      format: formData.type, // Manter tipo original como formato
+      type: formData.type,
+      category: formData.category,
+      file_url: formData.cover_url || null,
+      file_size: 0,
+      format: formData.type,
       brand_id: formData.brand_id || null,
       collection_id: formData.collection_id || null,
-      status: statusMapping[formData.status] || 'draft',
-      channels: formData.channel.length > 0 ? formData.channel : null,
+      status: formData.status,
+      channels: formData.channels.length > 0 ? formData.channels : null,
       file_links: formData.file_links.length > 0 ? formData.file_links : null,
       cover_url: formData.cover_url || null,
       tags: formData.tags.length > 0 ? formData.tags : null
@@ -137,11 +84,11 @@ export default function AssetForm({ asset, collections, brands, users, currentUs
   };
 
   const handleChannelToggle = (channel) => {
-    const isSelected = formData.channel.includes(channel);
+    const isSelected = formData.channels.includes(channel);
     if (isSelected) {
-      setFormData({ ...formData, channel: formData.channel.filter(c => c !== channel) });
+      setFormData({ ...formData, channels: formData.channels.filter(c => c !== channel) });
     } else {
-      setFormData({ ...formData, channel: [...formData.channel, channel] });
+      setFormData({ ...formData, channels: [...formData.channels, channel] });
     }
   };
 
@@ -210,10 +157,6 @@ export default function AssetForm({ asset, collections, brands, users, currentUs
                   <option value="reel">Reel</option>
                   <option value="story">Story</option>
                   <option value="post">Post</option>
-                  <option value="banner">Banner</option>
-                  <option value="lookbook">Lookbook</option>
-                  <option value="catalog">Catálogo</option>
-                  <option value="outro">Outro</option>
                 </select>
               </div>
 
@@ -230,7 +173,6 @@ export default function AssetForm({ asset, collections, brands, users, currentUs
                   <option value="evento">Evento</option>
                   <option value="editorial">Editorial</option>
                   <option value="ugc">UGC</option>
-                  <option value="outro">Outro</option>
                 </select>
               </div>
             </div>
@@ -375,7 +317,7 @@ export default function AssetForm({ asset, collections, brands, users, currentUs
                     <label key={channel} className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
-                        checked={formData.channel.includes(channel)}
+                        checked={formData.channels.includes(channel)}
                         onChange={() => handleChannelToggle(channel)}
                         className="w-4 h-4 rounded"
                       />

@@ -4,55 +4,60 @@
 export const mockUsers = [
   {
     id: "user-1",
-    name: "Ana Silva",
+    full_name: "Ana Silva",
     email: "ana.silva@marquente.com",
     role: "admin",
-    department: "dept-1",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ana",
+    department_id: "dept-1",
+    avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ana",
+    is_active: true,
     created_date: "2024-01-15T10:00:00Z",
     task_completion_streak: 5,
     total_tasks_completed: 42
   },
   {
     id: "user-2",
-    name: "Carlos Santos",
+    full_name: "Carlos Santos",
     email: "carlos.santos@marquente.com",
     role: "manager",
-    department: "dept-2",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Carlos",
+    department_id: "dept-2",
+    avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Carlos",
+    is_active: true,
     created_date: "2024-01-20T10:00:00Z",
     task_completion_streak: 3,
     total_tasks_completed: 28
   },
   {
     id: "user-3",
-    name: "Beatriz Costa",
+    full_name: "Beatriz Costa",
     email: "beatriz.costa@marquente.com",
-    role: "user",
-    department: "dept-1",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Beatriz",
+    role: "membro",
+    department_id: "dept-1",
+    avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Beatriz",
+    is_active: true,
     created_date: "2024-02-01T10:00:00Z",
     task_completion_streak: 7,
     total_tasks_completed: 56
   },
   {
     id: "user-4",
-    name: "Diego Oliveira",
+    full_name: "Diego Oliveira",
     email: "diego.oliveira@marquente.com",
-    role: "user",
-    department: "dept-3",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Diego",
+    role: "membro",
+    department_id: "dept-3",
+    avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Diego",
+    is_active: true,
     created_date: "2024-02-10T10:00:00Z",
     task_completion_streak: 2,
     total_tasks_completed: 19
   },
   {
     id: "user-5",
-    name: "Elena Ferreira",
+    full_name: "Elena Ferreira",
     email: "elena.ferreira@marquente.com",
-    role: "user",
-    department: "dept-4",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Elena",
+    role: "membro",
+    department_id: "dept-4",
+    avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Elena",
+    is_active: true,
     created_date: "2024-02-15T10:00:00Z",
     task_completion_streak: 4,
     total_tasks_completed: 31
@@ -112,7 +117,7 @@ export const mockProjects = [
     status: "in_progress",
     priority: "high",
     department: "dept-1",
-    owner: "user-1",
+    owner_id: "user-1",
     start_date: "2024-11-01T00:00:00Z",
     end_date: "2025-01-15T00:00:00Z",
     progress: 65,
@@ -128,7 +133,7 @@ export const mockProjects = [
     status: "planning",
     priority: "medium",
     department: "dept-1",
-    owner: "user-2",
+    owner_id: "user-2",
     start_date: "2024-12-01T00:00:00Z",
     end_date: "2025-03-31T00:00:00Z",
     progress: 25,
@@ -144,7 +149,7 @@ export const mockProjects = [
     status: "in_progress",
     priority: "high",
     department: "dept-3",
-    owner: "user-4",
+    owner_id: "user-4",
     start_date: "2024-10-01T00:00:00Z",
     end_date: "2024-12-31T00:00:00Z",
     progress: 78,
@@ -331,42 +336,42 @@ export const mockLaunchCalendar = [
     id: "event-1",
     title: "Lançamento Coleção Verão",
     description: "Evento de lançamento da nova coleção sustentável",
-    type: "launch",
+    type: "lancamento_colecao",
     start_date: "2024-12-15T18:00:00Z",
     end_date: "2024-12-15T22:00:00Z",
     collection: "coll-1",
     department: "dept-1",
     attendees: ["user-1", "user-2", "user-3"],
     location: "Showroom Mar Quente - São Paulo",
-    status: "scheduled",
+    status: "planejado",
     created_date: "2024-10-20T10:00:00Z"
   },
   {
     id: "event-2",
     title: "Sessão de Fotos - Lookbook",
     description: "Fotografia profissional para o lookbook digital",
-    type: "photoshoot",
+    type: "shooting",
     start_date: "2024-11-25T09:00:00Z",
     end_date: "2024-11-25T18:00:00Z",
     collection: "coll-1",
     department: "dept-1",
     attendees: ["user-1", "user-3"],
     location: "Estúdio Luz",
-    status: "confirmed",
+    status: "confirmado",
     created_date: "2024-10-15T10:00:00Z"
   },
   {
     id: "event-3",
     title: "Reunião de Planejamento - Inverno",
     description: "Planejamento estratégico da coleção inverno",
-    type: "meeting",
+    type: "evento",
     start_date: "2024-11-20T14:00:00Z",
     end_date: "2024-11-20T16:00:00Z",
     collection: "coll-3",
     department: "dept-1",
     attendees: ["user-1", "user-2"],
     location: "Sala de Reuniões - Online",
-    status: "scheduled",
+    status: "planejado",
     created_date: "2024-11-05T10:00:00Z"
   }
 ];
@@ -415,38 +420,48 @@ export const mockTickets = [
   }
 ];
 
-// UGC (User Generated Content)
+// UGC (Influenciadores / User Generated Content)
 export const mockUGC = [
   {
     id: "ugc-1",
-    content_type: "instagram_post",
-    author_name: "Julia Fashion",
-    author_handle: "@juliafashion",
-    content_url: "https://instagram.com/p/abc123",
-    image_url: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=400",
-    caption: "Amando essa peça da nova coleção! #MarQuente #ModaSustentável",
-    likes: 1243,
-    comments: 87,
-    engagement_rate: 4.2,
+    name: "Julia Fashion",
+    instagram: "@juliafashion",
+    followers_instagram: 125000,
+    location: "São Paulo, SP",
+    status: "ativo",
+    tier: "micro",
+    email: "julia@fashion.com",
+    phone: "(11) 99999-0001",
+    rate_per_post: 1500,
+    rate_per_story: 500,
+    preferred_brands: ["Mar Quente", "Sustentável Co."],
+    total_collaborations: 8,
+    average_performance: 4.2,
+    last_collaboration: "2024-11-10",
+    niche: "Moda Sustentável",
+    notes: "Parceira desde 2023, ótimo engajamento",
     collection: "coll-1",
-    approved: true,
-    featured: true,
     created_date: "2024-11-10T15:30:00Z"
   },
   {
     id: "ugc-2",
-    content_type: "tiktok_video",
-    author_name: "Carlos Style",
-    author_handle: "@carlosstyle",
-    content_url: "https://tiktok.com/@carlosstyle/video/123456",
-    image_url: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=400",
-    caption: "Look do dia com Mar Quente",
-    likes: 3421,
-    comments: 156,
-    engagement_rate: 5.8,
+    name: "Carlos Style",
+    instagram: "@carlosstyle",
+    followers_instagram: 340000,
+    location: "Rio de Janeiro, RJ",
+    status: "ativo",
+    tier: "macro",
+    email: "carlos@style.com",
+    phone: "(21) 99999-0002",
+    rate_per_post: 3000,
+    rate_per_story: 1000,
+    preferred_brands: ["Mar Quente", "Urban Wear"],
+    total_collaborations: 5,
+    average_performance: 5.8,
+    last_collaboration: "2024-11-09",
+    niche: "Streetwear",
+    notes: "Foco em conteúdo TikTok",
     collection: "coll-2",
-    approved: true,
-    featured: false,
     created_date: "2024-11-09T12:20:00Z"
   }
 ];
@@ -609,6 +624,13 @@ export const mockFinancialTransactions = [
 // Dados do usuário atual (simulando base44.auth.me())
 export const mockCurrentUser = mockUsers[0]; // Ana Silva - Admin
 
+// Entidades vazias (existem no Supabase mas não precisam de mock data)
+export const mockModels = [];
+export const mockPhotoshoots = [];
+export const mockCostItems = [];
+export const mockPartnerships = [];
+export const mockDeliveries = [];
+
 // Exportar todas as entidades
 export const mockData = {
   users: mockUsers,
@@ -618,6 +640,11 @@ export const mockData = {
   collections: mockCollections,
   stylists: mockStylists,
   styles: mockStyles,
+  models: mockModels,
+  photoshoots: mockPhotoshoots,
+  costItems: mockCostItems,
+  partnerships: mockPartnerships,
+  deliveries: mockDeliveries,
   launchCalendar: mockLaunchCalendar,
   tickets: mockTickets,
   ugc: mockUGC,

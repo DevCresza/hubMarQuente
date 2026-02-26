@@ -10,6 +10,15 @@ export default function CalendarEventDetails({ event, collections, users, depart
 
   const getEventTypeLabel = (type) => {
     const types = {
+      lancamento_colecao: "Lançamento de Coleção",
+      pre_venda: "Pré-venda",
+      campanha_marketing: "Campanha de Marketing",
+      shooting: "Sessão de Fotos",
+      evento: "Evento",
+      social_media: "Social Media",
+      influencer: "Ação com Influencer",
+      outro: "Outro",
+      // Compatibilidade com valores antigos
       launch: "Lançamento",
       photoshoot: "Sessão de Fotos",
       meeting: "Reunião",
@@ -18,18 +27,48 @@ export default function CalendarEventDetails({ event, collections, users, depart
     return types[type] || type;
   };
 
+  const getEventTypeColor = (type) => {
+    const colors = {
+      lancamento_colecao: "#3b82f6",
+      pre_venda: "#8b5cf6",
+      campanha_marketing: "#f59e0b",
+      shooting: "#ec4899",
+      evento: "#10b981",
+      social_media: "#06b6d4",
+      influencer: "#f97316",
+      outro: "#6b7280",
+      launch: "#3b82f6",
+      photoshoot: "#ec4899",
+      meeting: "#6b7280",
+      event: "#10b981"
+    };
+    return colors[type] || "#3b82f6";
+  };
+
   const getStatusColor = (status) => {
     const colors = {
+      planejado: "bg-gray-100 text-gray-700",
+      confirmado: "bg-blue-100 text-blue-700",
+      em_andamento: "bg-yellow-100 text-yellow-700",
+      concluido: "bg-green-100 text-green-700",
+      cancelado: "bg-red-100 text-red-700",
+      // Compatibilidade com valores antigos
       scheduled: "bg-gray-100 text-gray-700",
       confirmed: "bg-blue-100 text-blue-700",
       completed: "bg-green-100 text-green-700",
       cancelled: "bg-red-100 text-red-700"
     };
-    return colors[status] || colors.scheduled;
+    return colors[status] || "bg-gray-100 text-gray-700";
   };
 
   const getStatusLabel = (status) => {
     const labels = {
+      planejado: "Planejado",
+      confirmado: "Confirmado",
+      em_andamento: "Em Andamento",
+      concluido: "Concluído",
+      cancelado: "Cancelado",
+      // Compatibilidade com valores antigos
       scheduled: "Agendado",
       confirmed: "Confirmado",
       completed: "Concluído",
@@ -62,7 +101,8 @@ export default function CalendarEventDetails({ event, collections, users, depart
 
           <div className="flex items-start gap-4 mb-6">
             <div
-              className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-neumorphic-soft flex-shrink-0 bg-blue-500"
+              className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-neumorphic-soft flex-shrink-0"
+              style={{ backgroundColor: getEventTypeColor(event.type) }}
             >
               <Calendar className="w-8 h-8 text-white" />
             </div>

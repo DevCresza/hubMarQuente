@@ -10,7 +10,7 @@ import { format } from 'date-fns'; // Import format from date-fns
 export default function CalendarEventForm({ event, collections, users, departments, currentUser, onSave, onCancel, initialDate }) {
   const [formData, setFormData] = useState({
     title: event?.title || "",
-    type: event?.type || "launch",
+    type: event?.type || "lancamento_colecao",
     collection: event?.collection || "",
     start_date: event?.start_date || (initialDate ? format(initialDate, "yyyy-MM-dd'T'HH:mm") : ""),
     end_date: event?.end_date || "",
@@ -18,7 +18,7 @@ export default function CalendarEventForm({ event, collections, users, departmen
     location: event?.location || "",
     attendees: event?.attendees || [],
     department: event?.department || "",
-    status: event?.status || "scheduled"
+    status: event?.status || "planejado"
   });
 
   // Atualizar formData quando event mudar (para modo de edição)
@@ -26,7 +26,7 @@ export default function CalendarEventForm({ event, collections, users, departmen
     if (event) {
       setFormData({
         title: event.title || "",
-        type: event.type || "launch",
+        type: event.type || "lancamento_colecao",
         collection: event.collection || "",
         start_date: event.start_date || "",
         end_date: event.end_date || "",
@@ -34,13 +34,13 @@ export default function CalendarEventForm({ event, collections, users, departmen
         location: event.location || "",
         attendees: event.attendees || [],
         department: event.department || "",
-        status: event.status || "scheduled"
+        status: event.status || "planejado"
       });
     } else {
       // Reset para novo evento
       setFormData({
         title: "",
-        type: "launch",
+        type: "lancamento_colecao",
         collection: "",
         start_date: initialDate ? format(initialDate, "yyyy-MM-dd'T'HH:mm") : "",
         end_date: "",
@@ -48,7 +48,7 @@ export default function CalendarEventForm({ event, collections, users, departmen
         location: "",
         attendees: [],
         department: "",
-        status: "scheduled"
+        status: "planejado"
       });
     }
   }, [event, initialDate]);
@@ -84,10 +84,14 @@ export default function CalendarEventForm({ event, collections, users, departmen
   };
 
   const eventTypes = [
-    { value: "launch", label: "Lançamento" },
-    { value: "photoshoot", label: "Sessão de Fotos" },
-    { value: "meeting", label: "Reunião" },
-    { value: "event", label: "Evento" }
+    { value: "lancamento_colecao", label: "Lançamento de Coleção" },
+    { value: "pre_venda", label: "Pré-venda" },
+    { value: "campanha_marketing", label: "Campanha de Marketing" },
+    { value: "shooting", label: "Sessão de Fotos" },
+    { value: "evento", label: "Evento" },
+    { value: "social_media", label: "Social Media" },
+    { value: "influencer", label: "Ação com Influencer" },
+    { value: "outro", label: "Outro" }
   ];
 
   return (
@@ -144,16 +148,16 @@ export default function CalendarEventForm({ event, collections, users, departmen
                   onChange={(e) => setFormData({...formData, status: e.target.value})}
                   className="w-full px-4 py-3 bg-gray-100 shadow-neumorphic-inset border-none rounded-xl text-gray-700 font-medium"
                 >
-                  <option value="scheduled">Agendado</option>
-                  <option value="confirmed">Confirmado</option>
-                  <option value="completed">Concluído</option>
-                  <option value="cancelled">Cancelado</option>
+                  <option value="planejado">Planejado</option>
+                  <option value="confirmado">Confirmado</option>
+                  <option value="em_andamento">Em Andamento</option>
+                  <option value="concluido">Concluído</option>
+                  <option value="cancelado">Cancelado</option>
                 </select>
               </div>
             </div>
 
-            {formData.type === "launch" && (
-              <div>
+            <div>
                 <Label className="text-gray-700 mb-2 block font-semibold">Coleção</Label>
                 <select
                   value={formData.collection}
@@ -165,8 +169,7 @@ export default function CalendarEventForm({ event, collections, users, departmen
                     <option key={collection.id} value={collection.id}>{collection.name}</option>
                   ))}
                 </select>
-              </div>
-            )}
+            </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>

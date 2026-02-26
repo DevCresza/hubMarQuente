@@ -233,7 +233,7 @@ export default function SharedAssetsPage() {
                 <TypeIcon className="w-8 h-8 text-white" />
               </div>
               <div className="flex-1">
-                <h1 className="text-3xl font-semibold text-gray-800 mb-2">{selectedAsset.title}</h1>
+                <h1 className="text-3xl font-semibold text-gray-800 mb-2">{selectedAsset.name}</h1>
                 <div className="flex gap-2 flex-wrap">
                   <span className="px-3 py-1 rounded-lg text-xs font-semibold bg-blue-100 text-blue-700">
                     {selectedAsset.type}
@@ -252,7 +252,7 @@ export default function SharedAssetsPage() {
               <div className="bg-gray-100 rounded-2xl shadow-neumorphic-inset p-4 mb-6">
                 <img 
                   src={selectedAsset.cover_url} 
-                  alt={selectedAsset.title}
+                  alt={selectedAsset.name}
                   className="w-full max-h-96 object-contain rounded-xl shadow-neumorphic-soft"
                 />
               </div>

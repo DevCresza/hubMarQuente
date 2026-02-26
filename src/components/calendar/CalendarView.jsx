@@ -2,6 +2,23 @@ import React from "react";
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSameMonth, isSameDay, isToday } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
+const eventTypeColors = {
+    lancamento_colecao: "#3b82f6",
+    pre_venda: "#8b5cf6",
+    campanha_marketing: "#f59e0b",
+    shooting: "#ec4899",
+    evento: "#10b981",
+    social_media: "#06b6d4",
+    influencer: "#f97316",
+    outro: "#6b7280",
+    launch: "#3b82f6",
+    photoshoot: "#ec4899",
+    meeting: "#6b7280",
+    event: "#10b981"
+  };
+
+  const getEventColor = (event) => eventTypeColors[event.type] || "#3b82f6";
+
 export default function CalendarView({ events, currentDate, viewMode, onEventClick, onDateDoubleClick }) {
   const renderMonthView = () => {
     const monthStart = startOfMonth(currentDate);
@@ -45,7 +62,7 @@ export default function CalendarView({ events, currentDate, viewMode, onEventCli
                   key={event.id}
                   onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
                   className="text-xs p-1 rounded cursor-pointer truncate shadow-neumorphic-soft hover:shadow-neumorphic-pressed transition-all duration-200"
-                  style={{ backgroundColor: event.color || '#3b82f6' }}
+                  style={{ backgroundColor: getEventColor(event) }}
                 >
                   <span className="text-white font-medium">{event.title}</span>
                 </div>
@@ -111,7 +128,7 @@ export default function CalendarView({ events, currentDate, viewMode, onEventCli
                 key={event.id}
                 onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
                 className="p-2 rounded-lg cursor-pointer shadow-neumorphic-soft hover:shadow-neumorphic-pressed transition-all duration-200"
-                style={{ backgroundColor: event.color || '#3b82f6' }}
+                style={{ backgroundColor: getEventColor(event) }}
               >
                 <div className="text-white font-semibold text-sm">{event.title}</div>
                 <div className="text-white text-xs opacity-90">
@@ -158,7 +175,7 @@ export default function CalendarView({ events, currentDate, viewMode, onEventCli
                 <div className="flex items-start gap-3">
                   <div 
                     className="w-2 h-2 rounded-full mt-2 flex-shrink-0"
-                    style={{ backgroundColor: event.color || '#3b82f6' }}
+                    style={{ backgroundColor: getEventColor(event) }}
                   />
                   <div className="flex-1">
                     <h3 className="font-semibold text-gray-800">{event.title}</h3>

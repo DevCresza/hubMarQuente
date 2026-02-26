@@ -72,7 +72,9 @@ export default function Departments() {
 
   const getDepartmentTasks = (departmentId) => {
     const departmentUserIds = getDepartmentUsers(departmentId).map(u => u.id);
-    return tasks.filter(task => departmentUserIds.includes(task.assigned_to));
+    return tasks.filter(task =>
+      task.department === departmentId || departmentUserIds.includes(task.assigned_to)
+    );
   };
 
   const getManagerName = (managerId) => {
@@ -166,7 +168,7 @@ export default function Departments() {
             </div>
             <div className="text-center p-4 bg-gray-100 rounded-2xl shadow-neumorphic-inset">
               <CheckCircle className="w-8 h-8 mx-auto mb-2 text-purple-500" />
-              <div className="text-2xl font-semibold text-gray-700">{tasks.filter(t => t.status === 'concluido').length}</div>
+              <div className="text-2xl font-semibold text-gray-700">{tasks.filter(t => t.status === 'done').length}</div>
               <div className="text-sm text-gray-500">Tarefas Concluídas</div>
             </div>
           </div>

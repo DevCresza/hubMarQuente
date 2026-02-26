@@ -4,6 +4,7 @@ import { LaunchCalendar as LaunchCalendarEntity } from "@/api/entities";
 import { Collection } from "@/api/entities";
 import { User } from "@/api/entities";
 import { Department } from "@/api/entities";
+import { Brand } from "@/api/entities";
 import { Plus, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CalendarView from "../components/calendar/CalendarView";
@@ -17,6 +18,7 @@ export default function LaunchCalendarPage() {
   const [collections, setCollections] = useState([]);
   const [users, setUsers] = useState([]);
   const [departments, setDepartments] = useState([]);
+  const [brands, setBrands] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState("month"); // month, week, day
@@ -55,16 +57,18 @@ export default function LaunchCalendarPage() {
         .select('*')
         .order('full_name');
 
-      const [eventsData, collectionsData, departmentsData] = await Promise.all([
+      const [eventsData, collectionsData, departmentsData, brandsData] = await Promise.all([
         LaunchCalendarEntity.list("start_date"),
         Collection.list("name"),
-        Department.list("name")
+        Department.list("name"),
+        Brand.list("name")
       ]);
 
       setEvents(eventsData);
       setCollections(collectionsData);
       setUsers(usersData || []);
       setDepartments(departmentsData);
+      setBrands(brandsData);
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
     }
@@ -76,7 +80,8 @@ export default function LaunchCalendarPage() {
       // Campos permitidos na tabela launch_calendar
       const allowedFields = [
         'title', 'description', 'type', 'start_date', 'end_date',
-        'collection', 'department', 'attendees', 'location', 'status'
+        'collection', 'department', 'attendees', 'location', 'status',
+        'brand_id', 'color', 'tags'
       ];
 
       // Filtrar apenas campos permitidos
@@ -91,6 +96,19 @@ export default function LaunchCalendarPage() {
         await LaunchCalendarEntity.update(editingEvent.id, cleanEventData);
       } else {
         await LaunchCalendarEntity.create(cleanEventData);
+      }
+
+      // Salvar a cor na marca para manter a associação permanente
+      if (cleanEventData.brand_id && cleanEventData.color) {
+        try {
+          await Brand.update(cleanEventData.brand_id, { color: cleanEventData.color });
+          // Atualizar a lista local de brands com a nova cor
+          setBrands(prev => prev.map(b =>
+            b.id === cleanEventData.brand_id ? { ...b, color: cleanEventData.color } : b
+          ));
+        } catch (brandError) {
+          console.error("Erro ao salvar cor da marca:", brandError);
+        }
       }
 
       setShowForm(false);
@@ -151,6 +169,7 @@ export default function LaunchCalendarPage() {
         collections={collections}
         users={users}
         departments={departments}
+        brands={brands}
         currentUser={currentUser}
         onBack={() => setSelectedEvent(null)}
         onEdit={() => handleEditEvent(selectedEvent)}
@@ -270,13 +289,18 @@ export default function LaunchCalendarPage() {
             collections={collections}
             users={users}
             departments={departments}
+            brands={brands}
             currentUser={currentUser}
-            initialDate={initialDate} // Pass the initial date to the form
+            initialDate={initialDate}
             onSave={handleSaveEvent}
+            onBrandsChange={async () => {
+              const updated = await Brand.list("name");
+              setBrands(updated);
+            }}
             onCancel={() => {
               setShowForm(false);
               setEditingEvent(null);
-              setInitialDate(null); // Clear initial date on cancel
+              setInitialDate(null);
             }}
           />
         )}

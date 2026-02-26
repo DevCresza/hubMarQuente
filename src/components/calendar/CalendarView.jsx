@@ -17,7 +17,7 @@ const eventTypeColors = {
     event: "#10b981"
   };
 
-  const getEventColor = (event) => eventTypeColors[event.type] || "#3b82f6";
+  const getEventColor = (event) => event.color || eventTypeColors[event.type] || "#3b82f6";
 
 export default function CalendarView({ events, currentDate, viewMode, onEventClick, onDateDoubleClick }) {
   const renderMonthView = () => {

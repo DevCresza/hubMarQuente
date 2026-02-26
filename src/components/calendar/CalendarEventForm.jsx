@@ -4,10 +4,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Calendar } from "lucide-react";
-import { format } from 'date-fns'; // Import format from date-fns
+import { X, Calendar, Check, Palette, Tag, Plus } from "lucide-react";
+import { format } from 'date-fns';
+import { Brand } from "@/api/entities";
 
-export default function CalendarEventForm({ event, collections, users, departments, currentUser, onSave, onCancel, initialDate }) {
+const brandColors = [
+  { value: "#3b82f6", label: "Azul" },
+  { value: "#ef4444", label: "Vermelho" },
+  { value: "#10b981", label: "Verde" },
+  { value: "#f97316", label: "Laranja" },
+  { value: "#8b5cf6", label: "Roxo" },
+  { value: "#ec4899", label: "Rosa" },
+  { value: "#06b6d4", label: "Ciano" },
+  { value: "#84cc16", label: "Lima" },
+  { value: "#f59e0b", label: "Âmbar" },
+  { value: "#6366f1", label: "Índigo" },
+  { value: "#14b8a6", label: "Teal" },
+  { value: "#e11d48", label: "Cereja" },
+];
+
+export default function CalendarEventForm({ event, collections, users, departments, brands = [], currentUser, onSave, onCancel, onBrandsChange, initialDate }) {
   const [formData, setFormData] = useState({
     title: event?.title || "",
     type: event?.type || "lancamento_colecao",
@@ -18,8 +34,39 @@ export default function CalendarEventForm({ event, collections, users, departmen
     location: event?.location || "",
     attendees: event?.attendees || [],
     department: event?.department || "",
-    status: event?.status || "planejado"
+    status: event?.status || "planejado",
+    brand_id: event?.brand_id || "",
+    color: event?.color || "",
+    tags: event?.tags || []
   });
+
+  const [tagInput, setTagInput] = useState("");
+  const [showNewBrand, setShowNewBrand] = useState(false);
+  const [newBrandName, setNewBrandName] = useState("");
+  const [newBrandColor, setNewBrandColor] = useState("");
+  const [savingBrand, setSavingBrand] = useState(false);
+
+  const handleCreateBrand = async () => {
+    if (!newBrandName.trim()) return;
+    setSavingBrand(true);
+    try {
+      const created = await Brand.create({
+        name: newBrandName.trim(),
+        color: newBrandColor || null,
+      });
+      // Notificar o pai para atualizar a lista de brands
+      if (onBrandsChange) onBrandsChange();
+      // Selecionar a marca recém-criada
+      setFormData({ ...formData, brand_id: created.id, color: newBrandColor || formData.color });
+      setNewBrandName("");
+      setNewBrandColor("");
+      setShowNewBrand(false);
+    } catch (error) {
+      console.error("Erro ao criar marca:", error);
+      alert("Erro ao criar marca: " + (error.message || "Tente novamente"));
+    }
+    setSavingBrand(false);
+  };
 
   // Atualizar formData quando event mudar (para modo de edição)
   useEffect(() => {
@@ -34,10 +81,12 @@ export default function CalendarEventForm({ event, collections, users, departmen
         location: event.location || "",
         attendees: event.attendees || [],
         department: event.department || "",
-        status: event.status || "planejado"
+        status: event.status || "planejado",
+        brand_id: event.brand_id || "",
+        color: event.color || "",
+        tags: event.tags || []
       });
     } else {
-      // Reset para novo evento
       setFormData({
         title: "",
         type: "lancamento_colecao",
@@ -48,10 +97,24 @@ export default function CalendarEventForm({ event, collections, users, departmen
         location: "",
         attendees: [],
         department: "",
-        status: "planejado"
+        status: "planejado",
+        brand_id: "",
+        color: "",
+        tags: []
       });
     }
   }, [event, initialDate]);
+
+  const handleAddTag = () => {
+    if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
+      setFormData({ ...formData, tags: [...formData.tags, tagInput.trim()] });
+      setTagInput("");
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove) => {
+    setFormData({ ...formData, tags: formData.tags.filter(t => t !== tagToRemove) });
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -59,7 +122,8 @@ export default function CalendarEventForm({ event, collections, users, departmen
     // Campos permitidos na tabela launch_calendar
     const allowedFields = [
       'title', 'description', 'type', 'start_date', 'end_date',
-      'collection', 'department', 'attendees', 'location', 'status'
+      'collection', 'department', 'attendees', 'location', 'status',
+      'brand_id', 'color', 'tags'
     ];
 
     // Preparar dados para envio
@@ -227,6 +291,170 @@ export default function CalendarEventForm({ event, collections, users, departmen
                   <option key={dept.id} value={dept.id}>{dept.name}</option>
                 ))}
               </select>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <Label className="text-gray-700 font-semibold">Marca</Label>
+                <button
+                  type="button"
+                  onClick={() => setShowNewBrand(!showNewBrand)}
+                  className="text-xs text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1"
+                >
+                  <Plus className="w-3 h-3" />
+                  {showNewBrand ? 'Cancelar' : 'Nova Marca'}
+                </button>
+              </div>
+
+              {showNewBrand ? (
+                <div className="bg-gray-100 shadow-neumorphic-inset rounded-xl p-4 space-y-3">
+                  <Input
+                    value={newBrandName}
+                    onChange={(e) => setNewBrandName(e.target.value)}
+                    placeholder="Nome da marca"
+                    className="bg-gray-100 shadow-neumorphic-inset border-none text-gray-800"
+                    onKeyPress={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleCreateBrand(); } }}
+                  />
+                  <div>
+                    <p className="text-xs text-gray-500 mb-2 font-medium">Cor da marca:</p>
+                    <div className="flex gap-2 flex-wrap">
+                      {brandColors.map(color => (
+                        <button
+                          key={color.value}
+                          type="button"
+                          onClick={() => setNewBrandColor(newBrandColor === color.value ? "" : color.value)}
+                          className={`w-7 h-7 rounded-full transition-all duration-200 flex items-center justify-center ${
+                            newBrandColor === color.value
+                              ? 'ring-2 ring-offset-1 ring-gray-400 scale-110'
+                              : 'hover:scale-105'
+                          }`}
+                          style={{ backgroundColor: color.value }}
+                          title={color.label}
+                        >
+                          {newBrandColor === color.value && <Check className="w-3 h-3 text-white" />}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={handleCreateBrand}
+                    disabled={!newBrandName.trim() || savingBrand}
+                    className="w-full bg-blue-500 hover:bg-blue-600 text-white shadow-neumorphic-soft text-sm disabled:opacity-50"
+                  >
+                    {savingBrand ? 'Criando...' : 'Criar Marca'}
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <select
+                    value={formData.brand_id}
+                    onChange={(e) => {
+                      const selectedBrandId = e.target.value;
+                      const selectedBrand = brands.find(b => b.id === selectedBrandId);
+                      setFormData({
+                        ...formData,
+                        brand_id: selectedBrandId,
+                        color: selectedBrand?.color || formData.color
+                      });
+                    }}
+                    className="w-full px-4 py-3 bg-gray-100 shadow-neumorphic-inset border-none rounded-xl text-gray-700 font-medium"
+                  >
+                    <option value="">Selecione uma marca</option>
+                    {brands.map(brand => (
+                      <option key={brand.id} value={brand.id}>
+                        {brand.name}{brand.color ? ` — ${brandColors.find(c => c.value === brand.color)?.label || ''}` : ''}
+                      </option>
+                    ))}
+                  </select>
+                  {formData.brand_id && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      A cor escolhida abaixo será salva como padrão desta marca
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+
+            <div>
+              <Label className="text-gray-700 mb-2 block font-semibold">
+                <Palette className="w-4 h-4 inline mr-1" />
+                Cor {formData.brand_id ? 'da Marca' : 'do Evento'}
+              </Label>
+              <div className="bg-gray-100 shadow-neumorphic-inset rounded-xl p-4">
+                <div className="flex gap-2 flex-wrap">
+                  {brandColors.map(color => (
+                    <button
+                      key={color.value}
+                      type="button"
+                      onClick={() => setFormData({...formData, color: formData.color === color.value ? "" : color.value})}
+                      className={`w-9 h-9 rounded-full transition-all duration-200 flex items-center justify-center ${
+                        formData.color === color.value
+                          ? 'ring-2 ring-offset-2 ring-gray-400 shadow-neumorphic-pressed scale-110'
+                          : 'shadow-neumorphic-soft hover:scale-105'
+                      }`}
+                      style={{ backgroundColor: color.value }}
+                      title={color.label}
+                    >
+                      {formData.color === color.value && (
+                        <Check className="w-4 h-4 text-white" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+                {formData.color && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    Cor selecionada: {brandColors.find(c => c.value === formData.color)?.label || formData.color}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-gray-700 mb-2 block font-semibold">
+                <Tag className="w-4 h-4 inline mr-1" />
+                Tags
+              </Label>
+              <div className="flex gap-2 mb-2">
+                <Input
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddTag();
+                    }
+                  }}
+                  placeholder="Digite uma tag..."
+                  className="bg-gray-100 shadow-neumorphic-inset border-none text-gray-800"
+                />
+                <Button
+                  type="button"
+                  onClick={handleAddTag}
+                  className="bg-blue-500 hover:bg-blue-600 text-white shadow-neumorphic-soft"
+                >
+                  Adicionar
+                </Button>
+              </div>
+              {formData.tags.length > 0 && (
+                <div className="flex gap-2 flex-wrap">
+                  {formData.tags.map(tag => (
+                    <span
+                      key={tag}
+                      className="px-3 py-1 bg-gray-100 rounded-lg text-sm font-semibold text-gray-700 shadow-neumorphic-inset flex items-center gap-2"
+                    >
+                      #{tag}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTag(tag)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           </form>
         </div>

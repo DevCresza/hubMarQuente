@@ -476,6 +476,7 @@ export const mockBrands = [
     website: "https://marquente.com",
     founded_year: 2020,
     category: "Fashion",
+    color: "#3b82f6",
     created_date: "2023-01-10T10:00:00Z"
   }
 ];

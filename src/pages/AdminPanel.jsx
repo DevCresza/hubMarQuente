@@ -19,6 +19,7 @@ import AdminOverview from "../components/admin/AdminOverview";
 import AdminProjects from "../components/admin/AdminProjects";
 import AdminTasks from "../components/admin/AdminTasks";
 import AdminUsers from "../components/admin/AdminUsers";
+import AdminBrands from "../components/admin/AdminBrands";
 
 export default function AdminPanel() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -62,7 +63,8 @@ export default function AdminPanel() {
     { id: "overview", label: "Visão Geral", icon: LayoutDashboard },
     { id: "projects", label: "Projetos", icon: FolderKanban },
     { id: "tasks", label: "Tarefas", icon: CheckSquare },
-    { id: "users", label: "Usuários", icon: Users }
+    { id: "users", label: "Usuários", icon: Users },
+    { id: "brands", label: "Marcas", icon: Activity }
   ];
 
   return (
@@ -117,6 +119,7 @@ export default function AdminPanel() {
         {activeTab === "projects" && <AdminProjects currentUser={currentUser} />}
         {activeTab === "tasks" && <AdminTasks currentUser={currentUser} />}
         {activeTab === "users" && <AdminUsers currentUser={currentUser} />}
+        {activeTab === "brands" && <AdminBrands currentUser={currentUser} />}
       </div>
     </div>
   );

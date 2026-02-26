@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Edit, Trash2, Calendar, MapPin, Users, Building2 } from "lucide-react";
+import { ArrowLeft, Edit, Trash2, Calendar, MapPin, Users, Building2, Palette, Tag } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
-export default function CalendarEventDetails({ event, collections, users, departments, currentUser, onBack, onEdit, onUpdate }) {
+export default function CalendarEventDetails({ event, collections, users, departments, brands = [], currentUser, onBack, onEdit, onUpdate }) {
   const collection = collections.find(c => c.id === event.collection);
   const department = departments.find(d => d.id === event.department);
+  const brand = brands.find(b => b.id === event.brand_id);
 
   const getEventTypeLabel = (type) => {
     const types = {
@@ -102,7 +103,7 @@ export default function CalendarEventDetails({ event, collections, users, depart
           <div className="flex items-start gap-4 mb-6">
             <div
               className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-neumorphic-soft flex-shrink-0"
-              style={{ backgroundColor: getEventTypeColor(event.type) }}
+              style={{ backgroundColor: event.color || getEventTypeColor(event.type) }}
             >
               <Calendar className="w-8 h-8 text-white" />
             </div>
@@ -115,6 +116,11 @@ export default function CalendarEventDetails({ event, collections, users, depart
                 <span className="px-3 py-1 rounded-lg text-xs font-semibold bg-purple-100 text-purple-700">
                   {getEventTypeLabel(event.type)}
                 </span>
+                {brand && (
+                  <span className="px-3 py-1 rounded-lg text-xs font-semibold bg-indigo-100 text-indigo-700">
+                    {brand.name}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -172,6 +178,40 @@ export default function CalendarEventDetails({ event, collections, users, depart
               </div>
             )}
           </div>
+
+          {(brand || event.color) && (
+            <div className="bg-gray-100 rounded-2xl p-4 shadow-neumorphic-inset mb-6">
+              <div className="flex items-center gap-2 mb-2">
+                <Palette className="w-4 h-4 text-gray-500" />
+                <h3 className="font-semibold text-gray-800">Marca / Cor</h3>
+              </div>
+              <div className="flex items-center gap-3">
+                {event.color && (
+                  <div
+                    className="w-8 h-8 rounded-full shadow-neumorphic-soft"
+                    style={{ backgroundColor: event.color }}
+                  />
+                )}
+                {brand && <span className="text-gray-700 font-medium">{brand.name}</span>}
+              </div>
+            </div>
+          )}
+
+          {event.tags && event.tags.length > 0 && (
+            <div className="bg-gray-100 rounded-2xl p-4 shadow-neumorphic-inset mb-6">
+              <div className="flex items-center gap-2 mb-2">
+                <Tag className="w-4 h-4 text-gray-500" />
+                <h3 className="font-semibold text-gray-800">Tags</h3>
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                {event.tags.map(tag => (
+                  <span key={tag} className="px-3 py-1 bg-gray-200 rounded-lg text-sm font-semibold text-gray-700">
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
           {event.description && (
             <div className="bg-gray-100 rounded-2xl p-4 shadow-neumorphic-inset mb-6">

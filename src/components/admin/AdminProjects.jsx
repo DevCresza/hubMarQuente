@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { supabase } from "@/api/supabaseClient";
-import { FolderKanban, AlertTriangle, Clock, CheckCircle, Users, Calendar, TrendingUp } from "lucide-react";
+import { FolderKanban, AlertTriangle, Clock, CheckCircle, Users, Calendar, TrendingUp, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -12,6 +13,7 @@ export default function AdminProjects({ currentUser }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedProject, setSelectedProject] = useState(null);
+  const [deletingProject, setDeletingProject] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -34,6 +36,24 @@ export default function AdminProjects({ currentUser }) {
     setTasks(tasksData);
     setUsers(usersData || []);
     setLoading(false);
+  };
+
+  const handleDeleteProject = async (project) => {
+    if (!confirm(`Tem certeza que deseja excluir o projeto "${project.name}"?\n\nEsta ação não pode ser desfeita e todas as tarefas associadas ficarão sem projeto.`)) {
+      return;
+    }
+
+    try {
+      setDeletingProject(project.id);
+      await base44.entities.Project.delete(project.id);
+      setSelectedProject(null);
+      await loadData();
+    } catch (error) {
+      console.error("Erro ao excluir projeto:", error);
+      alert("Erro ao excluir projeto: " + (error.message || "Tente novamente"));
+    } finally {
+      setDeletingProject(null);
+    }
   };
 
   if (loading) {
@@ -104,12 +124,25 @@ export default function AdminProjects({ currentUser }) {
 
     return (
       <div className="space-y-6">
-        <button
-          onClick={() => setSelectedProject(null)}
-          className="text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-2"
-        >
-          ← Voltar para todos os projetos
-        </button>
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => setSelectedProject(null)}
+            className="text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-2"
+          >
+            ← Voltar para todos os projetos
+          </button>
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDeleteProject(selectedProject);
+            }}
+            disabled={deletingProject === selectedProject.id}
+            className="bg-red-500 hover:bg-red-600 text-white shadow-neumorphic-soft"
+          >
+            <Trash2 className="w-4 h-4 mr-2" />
+            {deletingProject === selectedProject.id ? "Excluindo..." : "Excluir Projeto"}
+          </Button>
+        </div>
 
         <div className="bg-gray-100 rounded-2xl shadow-neumorphic p-6">
           <div className="flex items-start justify-between mb-6">
@@ -269,6 +302,17 @@ export default function AdminProjects({ currentUser }) {
                     )}
                   </div>
                 </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteProject(project);
+                  }}
+                  disabled={deletingProject === project.id}
+                  className="p-2 rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all duration-200"
+                  title="Excluir projeto"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
               </div>
 
               {project.analysis.hasProblems && (

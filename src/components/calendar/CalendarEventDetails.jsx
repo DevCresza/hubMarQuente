@@ -4,7 +4,7 @@ import { ArrowLeft, Edit, Trash2, Calendar, MapPin, Users, Building2, Palette, T
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
-export default function CalendarEventDetails({ event, collections, users, departments, brands = [], currentUser, onBack, onEdit, onUpdate }) {
+export default function CalendarEventDetails({ event, collections, users, departments, brands = [], currentUser, onBack, onEdit, onDelete, onUpdate }) {
   const collection = collections.find(c => c.id === event.collection);
   const department = departments.find(d => d.id === event.department);
   const brand = brands.find(b => b.id === event.brand_id);
@@ -91,13 +91,28 @@ export default function CalendarEventDetails({ event, collections, users, depart
               <ArrowLeft className="w-4 h-4 mr-2" />
               Voltar
             </Button>
-            <Button
-              onClick={onEdit}
-              className="bg-blue-500 hover:bg-blue-600 text-white shadow-neumorphic-soft hover:shadow-neumorphic-pressed transition-all duration-200"
-            >
-              <Edit className="w-4 h-4 mr-2" />
-              Editar
-            </Button>
+            <div className="flex gap-2">
+              {currentUser?.role === 'admin' && onDelete && (
+                <Button
+                  onClick={() => {
+                    if (confirm(`Tem certeza que deseja excluir o evento "${event.title}"?\n\nEsta ação não pode ser desfeita.`)) {
+                      onDelete(event.id);
+                    }
+                  }}
+                  className="bg-red-500 hover:bg-red-600 text-white shadow-neumorphic-soft hover:shadow-neumorphic-pressed transition-all duration-200"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Excluir
+                </Button>
+              )}
+              <Button
+                onClick={onEdit}
+                className="bg-blue-500 hover:bg-blue-600 text-white shadow-neumorphic-soft hover:shadow-neumorphic-pressed transition-all duration-200"
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                Editar
+              </Button>
+            </div>
           </div>
 
           <div className="flex items-start gap-4 mb-6">

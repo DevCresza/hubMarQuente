@@ -121,6 +121,17 @@ export default function LaunchCalendarPage() {
     }
   };
 
+  const handleDeleteEvent = async (eventId) => {
+    try {
+      await LaunchCalendarEntity.delete(eventId);
+      setSelectedEvent(null);
+      loadData();
+    } catch (error) {
+      console.error("Erro ao excluir evento:", error);
+      alert("Erro ao excluir evento: " + (error.message || "Tente novamente"));
+    }
+  };
+
   const handleEditEvent = (event) => {
     setSelectedEvent(null); // Fechar visualização antes de editar
     setEditingEvent(event);
@@ -173,6 +184,7 @@ export default function LaunchCalendarPage() {
         currentUser={currentUser}
         onBack={() => setSelectedEvent(null)}
         onEdit={() => handleEditEvent(selectedEvent)}
+        onDelete={handleDeleteEvent}
         onUpdate={loadData}
       />
     );

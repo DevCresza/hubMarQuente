@@ -9,7 +9,7 @@ export default function CalendarFilters({ filters, setFilters, collections, depa
         <h3 className="font-semibold text-gray-800">Filtros</h3>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <div>
           <label className="text-xs text-gray-500 font-semibold mb-2 block">Tipo de Evento</label>
           <select
@@ -26,6 +26,21 @@ export default function CalendarFilters({ filters, setFilters, collections, depa
             <option value="social_media">Social Media</option>
             <option value="influencer">Ação com Influencer</option>
             <option value="outro">Outro</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="text-xs text-gray-500 font-semibold mb-2 block">Categoria</label>
+          <select
+            value={filters.category}
+            onChange={(e) => setFilters({...filters, category: e.target.value})}
+            className="w-full px-4 py-2 bg-gray-100 shadow-neumorphic-inset border-none rounded-xl text-gray-700 font-medium text-sm"
+          >
+            <option value="all">Todas as Categorias</option>
+            <option value="R1">R1</option>
+            <option value="R2">R2</option>
+            <option value="R3">R3</option>
+            <option value="R4">R4</option>
           </select>
         </div>
 

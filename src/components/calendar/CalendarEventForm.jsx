@@ -35,9 +35,11 @@ export default function CalendarEventForm({ event, collections, users, departmen
     attendees: event?.attendees || [],
     department: event?.department || "",
     status: event?.status || "planejado",
+    category: event?.category || "",
     brand_id: event?.brand_id || "",
     color: event?.color || "",
-    tags: event?.tags || []
+    tags: event?.tags || [],
+    departments: event?.departments || (event?.department ? [event.department] : [])
   });
 
   const [tagInput, setTagInput] = useState("");
@@ -82,9 +84,11 @@ export default function CalendarEventForm({ event, collections, users, departmen
         attendees: event.attendees || [],
         department: event.department || "",
         status: event.status || "planejado",
+        category: event.category || "",
         brand_id: event.brand_id || "",
         color: event.color || "",
-        tags: event.tags || []
+        tags: event.tags || [],
+        departments: event.departments || (event.department ? [event.department] : [])
       });
     } else {
       setFormData({
@@ -98,9 +102,11 @@ export default function CalendarEventForm({ event, collections, users, departmen
         attendees: [],
         department: "",
         status: "planejado",
+        category: "",
         brand_id: "",
         color: "",
-        tags: []
+        tags: [],
+        departments: []
       });
     }
   }, [event, initialDate]);
@@ -119,11 +125,22 @@ export default function CalendarEventForm({ event, collections, users, departmen
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    // Validação obrigatória
+    if (!formData.title.trim()) {
+      alert("O título é obrigatório.");
+      return;
+    }
+
+    if (!formData.start_date) {
+      alert("A data de início é obrigatória.");
+      return;
+    }
+
     // Campos permitidos na tabela launch_calendar
     const allowedFields = [
       'title', 'description', 'type', 'start_date', 'end_date',
-      'collection', 'department', 'attendees', 'location', 'status',
-      'brand_id', 'color', 'tags'
+      'collection', 'department', 'departments', 'attendees', 'location', 'status',
+      'category', 'brand_id', 'color', 'tags'
     ];
 
     // Preparar dados para envio
@@ -139,7 +156,17 @@ export default function CalendarEventForm({ event, collections, users, departmen
       }
     });
 
-    // Se end_date não foi fornecido, usar start_date como padrão (campo obrigatório)
+    // Garantir que start_date tenha horário (fallback para 00:00)
+    if (dataToSave.start_date && !dataToSave.start_date.includes('T')) {
+      dataToSave.start_date = dataToSave.start_date + 'T00:00';
+    }
+
+    // Garantir que end_date tenha horário se fornecida
+    if (dataToSave.end_date && !dataToSave.end_date.includes('T')) {
+      dataToSave.end_date = dataToSave.end_date + 'T00:00';
+    }
+
+    // Se end_date não foi fornecido, usar start_date como padrão
     if (!dataToSave.end_date && dataToSave.start_date) {
       dataToSave.end_date = dataToSave.start_date;
     }
@@ -280,17 +307,55 @@ export default function CalendarEventForm({ event, collections, users, departmen
             </div>
 
             <div>
-              <Label className="text-gray-700 mb-2 block font-semibold">Departamento</Label>
+              <Label className="text-gray-700 mb-2 block font-semibold">Categoria</Label>
               <select
-                value={formData.department}
-                onChange={(e) => setFormData({...formData, department: e.target.value})}
+                value={formData.category}
+                onChange={(e) => setFormData({...formData, category: e.target.value})}
                 className="w-full px-4 py-3 bg-gray-100 shadow-neumorphic-inset border-none rounded-xl text-gray-700 font-medium"
               >
-                <option value="">Selecione um departamento</option>
-                {departments.map(dept => (
-                  <option key={dept.id} value={dept.id}>{dept.name}</option>
-                ))}
+                <option value="">Sem categoria</option>
+                <option value="R1">R1</option>
+                <option value="R2">R2</option>
+                <option value="R3">R3</option>
+                <option value="R4">R4</option>
               </select>
+            </div>
+
+            <div>
+              <Label className="text-gray-700 mb-2 block font-semibold">Departamentos</Label>
+              <div className="bg-gray-100 shadow-neumorphic-inset rounded-xl p-3 space-y-2 max-h-40 overflow-y-auto">
+                {departments.map(dept => {
+                  const isSelected = formData.departments.includes(dept.id);
+                  return (
+                    <label
+                      key={dept.id}
+                      className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                        isSelected ? 'bg-blue-50 shadow-neumorphic-pressed' : 'hover:bg-gray-200'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => {
+                          const newDepts = isSelected
+                            ? formData.departments.filter(d => d !== dept.id)
+                            : [...formData.departments, dept.id];
+                          setFormData({ ...formData, departments: newDepts, department: newDepts[0] || "" });
+                        }}
+                        className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className={`text-sm font-medium ${isSelected ? 'text-blue-700' : 'text-gray-700'}`}>
+                        {dept.name}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+              {formData.departments.length > 0 && (
+                <p className="text-xs text-gray-500 mt-1">
+                  {formData.departments.length} departamento(s) selecionado(s)
+                </p>
+              )}
             </div>
 
             <div>

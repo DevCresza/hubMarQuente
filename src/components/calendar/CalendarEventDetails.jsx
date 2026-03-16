@@ -7,6 +7,9 @@ import { ptBR } from "date-fns/locale";
 export default function CalendarEventDetails({ event, collections, users, departments, brands = [], currentUser, onBack, onEdit, onDelete, onUpdate }) {
   const collection = collections.find(c => c.id === event.collection);
   const department = departments.find(d => d.id === event.department);
+  const eventDepartments = event.departments
+    ? departments.filter(d => event.departments.includes(d.id))
+    : (department ? [department] : []);
   const brand = brands.find(b => b.id === event.brand_id);
 
   const getEventTypeLabel = (type) => {
@@ -131,6 +134,11 @@ export default function CalendarEventDetails({ event, collections, users, depart
                 <span className="px-3 py-1 rounded-lg text-xs font-semibold bg-purple-100 text-purple-700">
                   {getEventTypeLabel(event.type)}
                 </span>
+                {event.category && (
+                  <span className="px-3 py-1 rounded-lg text-xs font-semibold bg-orange-100 text-orange-700">
+                    {event.category}
+                  </span>
+                )}
                 {brand && (
                   <span className="px-3 py-1 rounded-lg text-xs font-semibold bg-indigo-100 text-indigo-700">
                     {brand.name}
@@ -173,13 +181,19 @@ export default function CalendarEventDetails({ event, collections, users, depart
               </div>
             )}
 
-            {department && (
+            {eventDepartments.length > 0 && (
               <div className="bg-gray-100 rounded-2xl p-4 shadow-neumorphic-inset">
                 <div className="flex items-center gap-2 mb-2">
                   <Building2 className="w-4 h-4 text-gray-500" />
-                  <p className="text-xs text-gray-500 font-semibold">Departamento</p>
+                  <p className="text-xs text-gray-500 font-semibold">Departamento(s)</p>
                 </div>
-                <p className="text-gray-800 font-semibold">{department.name}</p>
+                <div className="flex flex-wrap gap-2">
+                  {eventDepartments.map(d => (
+                    <span key={d.id} className="px-3 py-1 bg-gray-200 rounded-lg text-sm font-semibold text-gray-700">
+                      {d.name}
+                    </span>
+                  ))}
+                </div>
               </div>
             )}
 

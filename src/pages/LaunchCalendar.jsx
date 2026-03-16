@@ -5,7 +5,7 @@ import { Collection } from "@/api/entities";
 import { User } from "@/api/entities";
 import { Department } from "@/api/entities";
 import { Brand } from "@/api/entities";
-import { Plus, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CalendarView from "../components/calendar/CalendarView";
 import CalendarEventForm from "../components/calendar/CalendarEventForm";
@@ -21,9 +21,10 @@ export default function LaunchCalendarPage() {
   const [brands, setBrands] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState("month"); // month, week, day
+  const [viewMode, setViewMode] = useState("month");
   const [filters, setFilters] = useState({
     type: "all",
+    category: "all",
     collection: "all",
     department: "all",
     status: "all"
@@ -32,11 +33,13 @@ export default function LaunchCalendarPage() {
   const [editingEvent, setEditingEvent] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [initialDate, setInitialDate] = useState(null); // New state for initial date on form
+  const [initialDate, setInitialDate] = useState(null);
+  const [eventsLocked, setEventsLocked] = useState(false);
 
   useEffect(() => {
     loadData();
     loadCurrentUser();
+    loadSettings();
   }, []);
 
   const loadCurrentUser = async () => {
@@ -48,10 +51,38 @@ export default function LaunchCalendarPage() {
     }
   };
 
+  const loadSettings = async () => {
+    try {
+      const { data } = await supabase
+        .from('settings')
+        .select('value')
+        .eq('key', 'calendar_events_locked')
+        .single();
+      if (data) {
+        setEventsLocked(data.value === 'true');
+      }
+    } catch (error) {
+      console.error("Erro ao carregar configurações:", error);
+    }
+  };
+
+  const toggleEventsLocked = async () => {
+    const newValue = !eventsLocked;
+    try {
+      await supabase
+        .from('settings')
+        .update({ value: String(newValue), updated_date: new Date().toISOString() })
+        .eq('key', 'calendar_events_locked');
+      setEventsLocked(newValue);
+    } catch (error) {
+      console.error("Erro ao atualizar configuração:", error);
+      alert("Erro ao atualizar configuração");
+    }
+  };
+
   const loadData = async () => {
     setLoading(true);
     try {
-      // Buscar usuários diretamente do Supabase
       const { data: usersData } = await supabase
         .from('users')
         .select('*')
@@ -77,14 +108,12 @@ export default function LaunchCalendarPage() {
 
   const handleSaveEvent = async (eventData) => {
     try {
-      // Campos permitidos na tabela launch_calendar
       const allowedFields = [
         'title', 'description', 'type', 'start_date', 'end_date',
-        'collection', 'department', 'attendees', 'location', 'status',
-        'brand_id', 'color', 'tags'
+        'collection', 'department', 'departments', 'attendees', 'location', 'status',
+        'category', 'brand_id', 'color', 'tags'
       ];
 
-      // Filtrar apenas campos permitidos
       const cleanEventData = {};
       Object.keys(eventData).forEach(key => {
         if (allowedFields.includes(key) && eventData[key] !== undefined) {
@@ -98,11 +127,9 @@ export default function LaunchCalendarPage() {
         await LaunchCalendarEntity.create(cleanEventData);
       }
 
-      // Salvar a cor na marca para manter a associação permanente
       if (cleanEventData.brand_id && cleanEventData.color) {
         try {
           await Brand.update(cleanEventData.brand_id, { color: cleanEventData.color });
-          // Atualizar a lista local de brands com a nova cor
           setBrands(prev => prev.map(b =>
             b.id === cleanEventData.brand_id ? { ...b, color: cleanEventData.color } : b
           ));
@@ -133,7 +160,7 @@ export default function LaunchCalendarPage() {
   };
 
   const handleEditEvent = (event) => {
-    setSelectedEvent(null); // Fechar visualização antes de editar
+    setSelectedEvent(null);
     setEditingEvent(event);
     setShowForm(true);
     setInitialDate(null);
@@ -146,28 +173,84 @@ export default function LaunchCalendarPage() {
   const getFilteredEvents = () => {
     return events.filter(event => {
       const typeMatch = filters.type === "all" || event.type === filters.type;
+      const categoryMatch = filters.category === "all" || event.category === filters.category;
       const collectionMatch = filters.collection === "all" || event.collection === filters.collection;
-      const departmentMatch = filters.department === "all" || event.department === filters.department;
+      const departmentMatch = filters.department === "all" ||
+        (event.departments && event.departments.includes(filters.department)) ||
+        event.department === filters.department;
       const statusMatch = filters.status === "all" || event.status === filters.status;
 
-      return typeMatch && collectionMatch && departmentMatch && statusMatch;
+      return typeMatch && categoryMatch && collectionMatch && departmentMatch && statusMatch;
     });
   };
 
   const filteredEvents = getFilteredEvents();
 
+  const canCreateEvents = currentUser?.role === 'admin' || !eventsLocked;
+  const isAdmin = currentUser?.role === 'admin';
+
   const handleDateDoubleClick = (date) => {
+    if (!canCreateEvents) return;
     setEditingEvent(null);
     setShowForm(true);
-    setInitialDate(date); // Set the initial date for the form
+    setInitialDate(date);
   };
+
+  // Navigation logic per view mode
+  const navigateBack = () => {
+    const newDate = new Date(currentDate);
+    if (viewMode === "year") newDate.setFullYear(newDate.getFullYear() - 1);
+    else if (viewMode === "semester") newDate.setMonth(newDate.getMonth() - 6);
+    else if (viewMode === "quarter") newDate.setMonth(newDate.getMonth() - 3);
+    else if (viewMode === "month") newDate.setMonth(newDate.getMonth() - 1);
+    else if (viewMode === "week") newDate.setDate(newDate.getDate() - 7);
+    else newDate.setDate(newDate.getDate() - 1);
+    setCurrentDate(newDate);
+  };
+
+  const navigateForward = () => {
+    const newDate = new Date(currentDate);
+    if (viewMode === "year") newDate.setFullYear(newDate.getFullYear() + 1);
+    else if (viewMode === "semester") newDate.setMonth(newDate.getMonth() + 6);
+    else if (viewMode === "quarter") newDate.setMonth(newDate.getMonth() + 3);
+    else if (viewMode === "month") newDate.setMonth(newDate.getMonth() + 1);
+    else if (viewMode === "week") newDate.setDate(newDate.getDate() + 7);
+    else newDate.setDate(newDate.getDate() + 1);
+    setCurrentDate(newDate);
+  };
+
+  // Navigation label per view mode
+  const getNavigationLabel = () => {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+
+    if (viewMode === "year") return String(year);
+    if (viewMode === "semester") {
+      const sem = month < 6 ? 1 : 2;
+      return `${sem}\u00BA Semestre ${year}`;
+    }
+    if (viewMode === "quarter") {
+      const q = Math.floor(month / 3) + 1;
+      return `${q}\u00BA Trimestre ${year}`;
+    }
+    return currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  };
+
+  const viewModes = [
+    { id: 'day', label: 'Dia' },
+    { id: 'week', label: 'Semana' },
+    { id: 'month', label: 'M\u00EAs' },
+    { id: 'quarter', label: 'Trimestre' },
+    { id: 'semester', label: 'Semestre' },
+    { id: 'year', label: 'Ano' },
+  ];
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 animate-pulse shadow-neumorphic-inset"></div>
-          <p className="text-gray-600">Carregando calendário...</p>
+          <p className="text-gray-600">Carregando calend\u00E1rio...</p>
         </div>
       </div>
     );
@@ -196,26 +279,50 @@ export default function LaunchCalendarPage() {
         <div className="bg-gray-100 rounded-3xl shadow-neumorphic p-8 mb-8">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-6">
             <div>
-              <h1 className="text-3xl font-semibold text-gray-800 mb-2">Calendário de Marketing</h1>
+              <h1 className="text-3xl font-semibold text-gray-800 mb-2">Calend\u00E1rio de Marketing</h1>
               <p className="text-gray-600">
-                Planeje lançamentos de coleções e ações de marketing
+                Planeje lan\u00E7amentos de cole\u00E7\u00F5es e a\u00E7\u00F5es de marketing
               </p>
             </div>
-            <Button 
-              onClick={() => {
-                setEditingEvent(null);
-                setInitialDate(null); // Clear initial date when clicking "Novo Evento" button
-                setShowForm(true);
-              }}
-              className="bg-blue-500 hover:bg-blue-600 text-white shadow-neumorphic-soft hover:shadow-neumorphic-pressed transition-all duration-200"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Novo Evento
-            </Button>
+            <div className="flex gap-2 items-center">
+              {isAdmin && (
+                <Button
+                  onClick={toggleEventsLocked}
+                  variant="outline"
+                  className={`shadow-neumorphic-soft hover:shadow-neumorphic-pressed transition-all duration-200 ${
+                    eventsLocked
+                      ? 'border-red-300 text-red-600 hover:bg-red-50'
+                      : 'border-green-300 text-green-600 hover:bg-green-50'
+                  }`}
+                  title={eventsLocked ? 'Eventos bloqueados - clique para desbloquear' : 'Eventos liberados - clique para bloquear'}
+                >
+                  <Lock className="w-4 h-4 mr-2" />
+                  {eventsLocked ? 'Desbloq. Eventos' : 'Bloq. Eventos'}
+                </Button>
+              )}
+              {canCreateEvents ? (
+                <Button
+                  onClick={() => {
+                    setEditingEvent(null);
+                    setInitialDate(null);
+                    setShowForm(true);
+                  }}
+                  className="bg-blue-500 hover:bg-blue-600 text-white shadow-neumorphic-soft hover:shadow-neumorphic-pressed transition-all duration-200"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Novo Evento
+                </Button>
+              ) : (
+                <div className="flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600 font-semibold">
+                  <Lock className="w-4 h-4" />
+                  Eventos bloqueados
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Calendar Navigation */}
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex gap-2">
               <Button
                 variant="outline"
@@ -229,13 +336,7 @@ export default function LaunchCalendarPage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => {
-                    const newDate = new Date(currentDate);
-                    if (viewMode === "month") newDate.setMonth(newDate.getMonth() - 1);
-                    else if (viewMode === "week") newDate.setDate(newDate.getDate() - 7);
-                    else newDate.setDate(newDate.getDate() - 1);
-                    setCurrentDate(newDate);
-                  }}
+                  onClick={navigateBack}
                   className="shadow-neumorphic-soft hover:shadow-neumorphic-pressed bg-gray-100"
                 >
                   <ChevronLeft className="w-4 h-4" />
@@ -243,13 +344,7 @@ export default function LaunchCalendarPage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => {
-                    const newDate = new Date(currentDate);
-                    if (viewMode === "month") newDate.setMonth(newDate.getMonth() + 1);
-                    else if (viewMode === "week") newDate.setDate(newDate.getDate() + 7);
-                    else newDate.setDate(newDate.getDate() + 1);
-                    setCurrentDate(newDate);
-                  }}
+                  onClick={navigateForward}
                   className="shadow-neumorphic-soft hover:shadow-neumorphic-pressed bg-gray-100"
                 >
                   <ChevronRight className="w-4 h-4" />
@@ -258,21 +353,21 @@ export default function LaunchCalendarPage() {
             </div>
 
             <div className="flex items-center gap-4">
-              <span className="text-lg font-semibold text-gray-800">
-                {currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
+              <span className="text-lg font-semibold text-gray-800 capitalize">
+                {getNavigationLabel()}
               </span>
-              <div className="flex gap-1 p-1 bg-gray-100 rounded-xl shadow-neumorphic-inset">
-                {['month', 'week', 'day'].map((mode) => (
+              <div className="flex gap-1 p-1 bg-gray-100 rounded-xl shadow-neumorphic-inset flex-wrap">
+                {viewModes.map((mode) => (
                   <button
-                    key={mode}
-                    onClick={() => setViewMode(mode)}
+                    key={mode.id}
+                    onClick={() => setViewMode(mode.id)}
                     className={`px-3 py-1 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                      viewMode === mode 
-                        ? 'shadow-neumorphic-pressed bg-gray-100 text-blue-600' 
+                      viewMode === mode.id
+                        ? 'shadow-neumorphic-pressed bg-gray-100 text-blue-600'
                         : 'text-gray-600 hover:text-gray-800'
                     }`}
                   >
-                    {mode === 'month' ? 'Mês' : mode === 'week' ? 'Semana' : 'Dia'}
+                    {mode.label}
                   </button>
                 ))}
               </div>
@@ -280,7 +375,7 @@ export default function LaunchCalendarPage() {
           </div>
         </div>
 
-        <CalendarFilters 
+        <CalendarFilters
           filters={filters}
           setFilters={setFilters}
           collections={collections}
@@ -292,7 +387,7 @@ export default function LaunchCalendarPage() {
           currentDate={currentDate}
           viewMode={viewMode}
           onEventClick={handleViewEvent}
-          onDateDoubleClick={handleDateDoubleClick} // Pass the new handler
+          onDateDoubleClick={handleDateDoubleClick}
         />
 
         {showForm && (
